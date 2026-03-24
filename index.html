@@ -112,6 +112,7 @@
             title: "Japan Invades Manchuria",
             description: "Seeking valuable resources to fuel its growing empire, the Japanese military has aggressively invaded the resource-rich region of Manchuria in China. This is a blatant violation of international peace treaties, including the Kellogg-Briand Pact. The League of Nations is paralyzed, and the world nervously watches to see if the U.S. will step up to stop this unprovoked aggression.",
             mapUrl: "map1.png",
+            isInvasion: true,
             options: [
               { text: "Send the U.S. Navy to force Japan out of China.", isHistorical: false, isolationShift: -25, tensionShift: 15, feedback: "The public heavily protests this move. They do not want American boys dying in an Asian war." },
               { text: "Condemn the invasion in writing, but take no action.", isHistorical: true, isolationShift: 5, tensionShift: 10, feedback: "You avoid war, but Japan ignores your letter and continues its aggressive expansion." },
@@ -134,9 +135,10 @@
           {
             id: 6, phase: "Phase 2: Isolationism", date: "1935",
             title: "Italy Invades Ethiopia",
-            description: "Seeking imperial glory, Benito Mussolini’s fascist Italian army brutally invades the independent African nation of Ethiopia, using modern tanks and poison gas against Ethiopian defenders. The League of Nations condemns the attack but does nothing to stop it. Terrified of being dragged into another foreign slaughter, the U.S. Congress scrambles to draft a new 'Neutrality Act.'",
+            description: "Seeking imperial glory, Benito Mussolini’s fascist Italian army brutally invades the independent African nation of Ethiopia, using modern tanks and poison gas against Ethiopian defenders. The League of Nations condemns condemns the attack but does nothing to stop it. Terrified of being dragged into another foreign slaughter, the U.S. Congress scrambles to draft a new 'Neutrality Act.'",
             mapUrl: "map2.png",
             dictatorUrl: "dictator1.png",
+            isInvasion: true,
             options: [
               { text: "Ban all arms sales to ANY nation at war, victim or aggressor.", isHistorical: true, isolationShift: 15, tensionShift: 10, feedback: "You successfully keep the U.S. out of the conflict, but Ethiopia is left defenseless." },
               { text: "Sell weapons only to the victim (Ethiopia).", isHistorical: false, isolationShift: -10, tensionShift: 15, feedback: "Congress blocks you. They fear that picking sides will inevitably drag the U.S. into the war." }
@@ -205,6 +207,7 @@
             title: "Poland Invaded (WWII Begins)",
             description: "The appeasement strategy has failed completely. Hitler's forces launch a devastating, lightning-fast 'blitzkrieg' invasion of Poland. Britain and France immediately declare war on Germany. World War II has officially begun. The Allied forces are now locked in a desperate fight against the highly advanced Nazi war machine, and they urgently need American weapons to survive.",
             mapUrl: "map5.png",
+            isInvasion: true,
             vocabChallenge: {
                 title: "BATTLEFIELD REPORT: Tactic Identified",
                 text: "Hitler's forces have overrun Poland using a terrifying new tactic combining rapid tanks and air support to create a 'lightning war'. What is the German word for this?",
@@ -439,7 +442,7 @@
                   <div className="h-6 w-full bg-gradient-to-r from-blue-600 via-amber-500 to-red-600 rounded-full relative shadow-inner">
                     <div 
                       className="absolute top-0 bottom-0 w-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] border-2 border-slate-900 transition-all duration-1000 ease-in-out z-10"
-                      style={{ left: `${100 - scores.isolationism}%`, transform: 'translateX(-50%)' }} 
+                      style={{ left: `${scores.isolationism}%`, transform: 'translateX(-50%)' }} 
                     />
                     <div className="absolute top-0 bottom-0 w-0.5 bg-slate-900 left-1/2 opacity-50" />
                   </div>
@@ -497,15 +500,18 @@
 
               {TopNav()}
               
-              <main key={currentEventIndex} className={`flex-1 max-w-4xl mx-auto p-4 w-full mt-6 mb-12 ${event.isShocking ? 'animate-shake' : ''}`}>
+              <main key={currentEventIndex} className={`flex-1 max-w-4xl mx-auto p-4 w-full mt-6 mb-12 ${(event.isShocking || event.isInvasion) ? 'animate-shake' : ''}`}>
                 <div className={`text-center py-2 px-4 rounded-full font-bold mb-6 border-2 inline-block mx-auto ${getPhaseColor(event.phase)} shadow-sm`}>
                   {event.phase}
                 </div>
 
-                <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-300">
-                  <div className="bg-slate-700 text-white p-4 flex justify-between items-center">
-                    <h2 className="text-2xl font-black">{event.title}</h2>
-                    <span className="bg-slate-800 px-3 py-1 rounded font-mono font-bold border border-slate-600 text-yellow-400">{event.date}</span>
+                <div className={`rounded-xl shadow-xl overflow-hidden border-2 transition-colors duration-500 ${event.isInvasion ? 'bg-red-50 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.4)]' : 'bg-white border-slate-300'}`}>
+                  <div className={`text-white p-4 flex justify-between items-center ${event.isInvasion ? 'bg-red-800' : 'bg-slate-700'}`}>
+                    <h2 className="text-2xl font-black">
+                      {event.isInvasion && <i className="fas fa-crosshairs text-red-400 mr-3 animate-pulse"></i>}
+                      {event.title}
+                    </h2>
+                    <span className={`px-3 py-1 rounded font-mono font-bold border ${event.isInvasion ? 'bg-red-950 border-red-700 text-red-300' : 'bg-slate-800 border-slate-600 text-yellow-400'}`}>{event.date}</span>
                   </div>
                   
                   <div className="p-6 md:p-8">
