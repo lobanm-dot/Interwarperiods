@@ -169,7 +169,8 @@
                 title: "DIPLOMATIC ALERT: Vocabulary Check",
                 text: "Britain and France are giving in to an aggressor's demands in order to avoid a larger war. What is the vocabulary term for this policy?",
                 answer: "appeasement",
-                hint: "Starts with 'A' and ends in 'MENT'"
+                hint: "Starts with 'A' and ends in 'MENT'",
+                triggerAfterAnswer: true
             },
             options: [
               { text: "Publicly support Appeasement. Peace must be maintained at all costs.", isHistorical: true, isolationShift: 5, tensionShift: 15, feedback: "Americans are relieved war was avoided, but Hitler is emboldened." },
@@ -210,11 +211,13 @@
             mapUrl: "map5.png",
             isInvasion: true,
             vocabChallenge: {
+                type: "multiple-choice",
                 title: "BATTLEFIELD REPORT: Tactic Identified",
-                text: "Hitler's forces have overrun Poland using a terrifying new tactic combining rapid tanks and air support to create a 'lightning war'. What is the German word for this?",
-                answer: "blitzkrieg",
-                hint: "Starts with 'B' and ends with 'G'",
-                isShocking: true
+                text: "Hitler's forces have overrun Poland using a terrifying new tactic combining rapid tanks and air support to create a 'lightning war'. Guess the German word for this tactic:",
+                options: ["Lebensraum", "Sitzkrieg", "Blitzkrieg", "Luftwaffe"],
+                answer: "Blitzkrieg",
+                isShocking: true,
+                triggerAfterAnswer: true
             },
             options: [
               { text: "Maintain absolute neutrality. No weapon sales to anyone.", isHistorical: false, isolationShift: 15, tensionShift: 20, feedback: "You stay neutral, but Britain and France face the Nazi war machine heavily outgunned." },
@@ -272,6 +275,30 @@
             ],
             historicalReality: "FDR and Churchill signed the Atlantic Charter. By late 1941, the U.S. Navy was actively fighting German U-boats to protect Lend-Lease shipments. Isolationism was dead.",
             spectrumTag: "Undeclared War"
+          },
+          {
+            id: 16, phase: "Phase 3: Gradual Intervention", date: "Summer 1941",
+            title: "Japanese Expansion & The Oil Embargo",
+            description: "While Europe is engulfed in war, Japan continues its brutal conquest of Asia. Having occupied Manchuria and much of China, Japanese forces are now moving into French Indochina (modern-day Vietnam) to seize rubber and resources. This directly threatens American territories in the Philippines. The U.S. currently supplies 80% of Japan's oil. If you cut off their oil, their war machine will grind to a halt, but it will almost certainly force them into a desperate attack.",
+            mapUrl: "indochina.png",
+            options: [
+              { text: "Issue an ultimatum: Freeze Japanese assets and launch a total embargo on oil and scrap metal.", isHistorical: true, isolationShift: -20, tensionShift: 30, feedback: "You cut off the lifeblood of the Japanese military. Japan is now backed into a corner." },
+              { text: "Continue selling oil to Japan to avoid provoking a war in the Pacific.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "You avoid immediate war, but you are fueling the destruction of Asia." }
+            ],
+            historicalReality: "FDR froze all Japanese assets in the U.S. and instituted a total oil embargo. Japan was given a stark choice: abandon their empire or go to war with the United States to secure oil in the Dutch East Indies.",
+            spectrumTag: "Economic Warfare"
+          },
+          {
+            id: 17, phase: "Phase 3: Gradual Intervention", date: "December 7, 1941",
+            title: "Pearl Harbor",
+            description: "\"A date which will live in infamy.\" In response to the crippling oil embargo, Japan launches a devastating surprise attack on the U.S. Pacific Fleet at Pearl Harbor, Hawaii. Over 2,400 Americans are killed, and the fleet is severely crippled. The isolationist debate is instantly silenced.",
+            isShocking: true,
+            youtubeId: "3VqQAf74fsE", // This is real British Pathé footage of the attack
+            options: [
+              { text: "Ask Congress for a formal Declaration of War against the Empire of Japan.", isHistorical: true, isolationShift: -50, tensionShift: 50, feedback: "The nation unites behind you. America is officially at war." }
+            ],
+            historicalReality: "The United States officially entered World War II. The America First Committee immediately dissolved, and the nation united for total war.",
+            spectrumTag: "Total War"
           }
         ];
 
@@ -294,7 +321,7 @@
           useEffect(() => {
             if (gameState === 'game') {
                 const currentEvt = EVENTS[currentEventIndex];
-                if (currentEvt.vocabChallenge) {
+                if (currentEvt.vocabChallenge && !currentEvt.vocabChallenge.triggerAfterAnswer) {
                     setCurrentChallenge(currentEvt.vocabChallenge);
                     setChallengeInput("");
                     setChallengeError(false);
@@ -306,9 +333,25 @@
             }
           }, [currentEventIndex, gameState]);
 
-          const checkChallenge = () => {
-              if (challengeInput.toLowerCase().trim() === currentChallenge.answer.toLowerCase()) {
+          const proceedToNext = () => {
+            if (currentEventIndex < EVENTS.length - 1) {
+              setCurrentEventIndex(prev => prev + 1);
+              setHasAnsweredCurrent(false);
+              setCurrentFeedback("");
+              setIsMatch(false);
+            } else {
+              setGameState('results');
+            }
+          };
+
+          const checkChallenge = (selectedValue = null) => {
+              const valueToCheck = typeof selectedValue === 'string' ? selectedValue : challengeInput;
+              if (valueToCheck.toLowerCase().trim() === currentChallenge.answer.toLowerCase()) {
+                  const isExitChallenge = currentChallenge.triggerAfterAnswer;
                   setCurrentChallenge(null);
+                  if (isExitChallenge) {
+                      proceedToNext();
+                  }
               } else {
                   setChallengeError(true);
               }
@@ -340,14 +383,18 @@
           };
 
           const handleNextEvent = () => {
-            if (currentEventIndex < EVENTS.length - 1) {
-              setCurrentEventIndex(prev => prev + 1);
-              setHasAnsweredCurrent(false);
-              setCurrentFeedback("");
-              setIsMatch(false);
-            } else {
-              setGameState('results');
+            const currentEvt = EVENTS[currentEventIndex];
+            if (currentEvt.vocabChallenge && currentEvt.vocabChallenge.triggerAfterAnswer) {
+                setCurrentChallenge(currentEvt.vocabChallenge);
+                setChallengeInput("");
+                setChallengeError(false);
+                if (currentEvt.vocabChallenge.isShocking) {
+                    setFlashEffect(true);
+                    setTimeout(() => setFlashEffect(false), 800);
+                }
+                return;
             }
+            proceedToNext();
           };
 
           const getPhaseColor = (phaseText) => {
@@ -471,30 +518,55 @@
                       <p className="text-xl text-slate-700 mb-6 font-medium leading-relaxed">
                         {currentChallenge.text}
                       </p>
-                      <div className="mb-6">
-                        <input 
-                          type="text" 
-                          value={challengeInput}
-                          onChange={(e) => {
-                            setChallengeInput(e.target.value);
-                            setChallengeError(false);
-                          }}
-                          onKeyDown={(e) => e.key === 'Enter' && checkChallenge()}
-                          placeholder="Type the word..."
-                          className={`w-full text-2xl p-4 border-4 rounded-xl font-bold text-center uppercase tracking-widest outline-none transition ${challengeError ? 'border-red-500 bg-red-50 animate-input-error' : 'border-slate-300 focus:border-blue-500'}`}
-                        />
-                        {challengeError && (
-                          <p className="text-red-600 font-bold text-center mt-3 bg-red-100 p-2 rounded">
-                            Incorrect. Try again! <br/><span className="text-sm">(Hint: {currentChallenge.hint})</span>
-                          </p>
-                        )}
-                      </div>
-                      <button 
-                        onClick={checkChallenge}
-                        className="w-full bg-slate-800 hover:bg-slate-900 text-white font-black text-xl py-4 rounded-xl shadow-lg transition transform hover:scale-105"
-                      >
-                        Submit Answer
-                      </button>
+                      
+                      {currentChallenge.type === 'multiple-choice' ? (
+                        <div className="space-y-3 mb-6">
+                            {currentChallenge.options.map((opt, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => {
+                                        setChallengeInput(opt);
+                                        checkChallenge(opt);
+                                    }}
+                                    className="w-full text-left p-4 rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition shadow-sm font-bold text-xl text-slate-800"
+                                >
+                                    {opt}
+                                </button>
+                            ))}
+                            {challengeError && (
+                                <p className="text-red-600 font-bold text-center mt-3 bg-red-100 p-2 rounded animate-shake">
+                                    Incorrect. Try again!
+                                </p>
+                            )}
+                        </div>
+                      ) : (
+                          <>
+                              <div className="mb-6">
+                                <input 
+                                  type="text" 
+                                  value={challengeInput}
+                                  onChange={(e) => {
+                                    setChallengeInput(e.target.value);
+                                    setChallengeError(false);
+                                  }}
+                                  onKeyDown={(e) => e.key === 'Enter' && checkChallenge()}
+                                  placeholder="Type the word..."
+                                  className={`w-full text-2xl p-4 border-4 rounded-xl font-bold text-center uppercase tracking-widest outline-none transition ${challengeError ? 'border-red-500 bg-red-50 animate-input-error' : 'border-slate-300 focus:border-blue-500'}`}
+                                />
+                                {challengeError && (
+                                  <p className="text-red-600 font-bold text-center mt-3 bg-red-100 p-2 rounded">
+                                    Incorrect. Try again! <br/><span className="text-sm">(Hint: {currentChallenge.hint})</span>
+                                  </p>
+                                )}
+                              </div>
+                              <button 
+                                onClick={() => checkChallenge()}
+                                className="w-full bg-slate-800 hover:bg-slate-900 text-white font-black text-xl py-4 rounded-xl shadow-lg transition transform hover:scale-105"
+                              >
+                                Submit Answer
+                              </button>
+                          </>
+                      )}
                   </div>
                 </div>
               )}
@@ -559,6 +631,35 @@
                                 <source src={event.audioUrl.replace('.wav', '.mp3')} type="audio/mpeg" />
                                 Your browser does not support the audio element.
                             </audio>
+                        </div>
+                      </div>
+                    )}
+
+                    {event.videoUrl && (
+                      <div className="mb-6 bg-slate-100 p-4 rounded-lg border-2 border-slate-300 shadow-sm">
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2"><i className="fas fa-video mr-2"></i> Historical Video Footage</p>
+                        <div className="rounded overflow-hidden bg-black flex justify-center border-2 border-slate-800">
+                            <video controls className="w-full max-h-[400px] object-contain">
+                                <source src={event.videoUrl} type="video/mp4" />
+                                <source src={event.videoUrl.replace('.mp4', '.webm')} type="video/webm" />
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                      </div>
+                    )}
+
+                    {event.youtubeId && (
+                      <div className="mb-6 bg-slate-100 p-4 rounded-lg border-2 border-slate-300 shadow-sm">
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2"><i className="fab fa-youtube text-red-600 mr-2"></i> Historical Footage</p>
+                        <div className="rounded overflow-hidden bg-black border-2 border-slate-800 relative w-full pt-[56.25%] shadow-inner">
+                            <iframe 
+                                className="absolute top-0 left-0 w-full h-full"
+                                src={`https://www.youtube.com/embed/${event.youtubeId}?rel=0`} 
+                                title="YouTube video player" 
+                                frameBorder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowFullScreen>
+                            </iframe>
                         </div>
                       </div>
                     )}
