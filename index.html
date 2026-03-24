@@ -1,499 +1,503 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  Globe, 
-  AlertTriangle, 
-  BookOpen, 
-  ChevronRight, 
-  Award, 
-  ClipboardCheck,
-  Flag,
-  FileText,
-  PenTool,
-  CheckCircle,
-  XCircle
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interwar History Game: 1920-1941</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Load React -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Load Babel to compile JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-// --- GAME DATA ---
-const INITIAL_SCORES = {
-  isolationism: 80, // Starts high after WWI
-  tension: 10,
-  matches: 0
-};
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-stone-200">
+    <div id="root"></div>
 
-const EVENTS = [
-  // PHASE 1: Idealistic Diplomacy
-  {
-    id: 1, phase: "Phase 1: Idealistic Diplomacy", date: "1921",
-    title: "Washington Naval Conference",
-    description: "Following WWI, nations are worried about an expensive naval arms race. Major powers have gathered in Washington to discuss limiting the size of their navies.",
-    options: [
-      { text: "Propose massive, equal cuts to all major navies, including our own.", isHistorical: true, isolationShift: 0, tensionShift: -10, feedback: "You proposed the Five-Power Treaty. It's popular at home and eases global tensions, though it weakens your fleet." },
-      { text: "Refuse to limit the U.S. Navy, but ask others to cut theirs.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "Other nations reject this hypocrisy. An arms race continues." },
-      { text: "Form a strict military alliance with Britain and Japan.", isHistorical: false, isolationShift: -20, tensionShift: 5, feedback: "Americans are outraged! They want to avoid foreign entanglements and reject alliances." }
-    ],
-    historicalReality: "The U.S. led the conference and proposed the Five-Power Treaty, agreeing to scrap many existing ships to prevent an arms race. This was a classic 'Idealistic Diplomacy' move—hoping treaties could replace weapons.",
-    spectrumTag: "Idealistic / Neutral"
-  },
-  {
-    id: 2, phase: "Phase 1: Idealistic Diplomacy", date: "1928",
-    title: "The Kellogg-Briand Pact",
-    description: "France proposes a treaty to effectively 'outlaw war' as a tool of national policy. Over 60 nations are ready to sign. Should the U.S. join?",
-    options: [
-      { text: "Sign the treaty. A promise of peace is exactly what the world needs.", isHistorical: true, isolationShift: 5, tensionShift: -10, feedback: "The public loves this idealistic pledge for peace, though it lacks any real enforcement mechanism." },
-      { text: "Refuse to sign. Treaties without military backing are useless.", isHistorical: false, isolationShift: 10, tensionShift: 5, feedback: "You are heavily criticized for failing to support global peace efforts." }
-    ],
-    historicalReality: "The U.S. enthusiastically signed the Pact, effectively 'outlawing war.' It was the peak of hoping promises alone could prevent future conflict, keeping the U.S. out of actual military alliances.",
-    spectrumTag: "Idealistic / Neutral"
-  },
-  // PHASE 2: Isolationism
-  {
-    id: 3, phase: "Phase 2: Isolationism", date: "1929-1930",
-    title: "The Great Depression Takes Hold",
-    description: "The stock market has crashed and millions of Americans are losing their jobs. Global trade is collapsing. Where should the government focus its attention?",
-    options: [
-      { text: "Focus entirely inward on the domestic economy. Ignore overseas issues.", isHistorical: true, isolationShift: 15, tensionShift: 5, feedback: "Americans appreciate the focus on their suffering, but the lack of U.S. global leadership allows overseas crises to grow." },
-      { text: "Forgive international debts to stimulate the global economy.", isHistorical: false, isolationShift: -10, tensionShift: -5, feedback: "The American public is furious! They demand domestic relief, not foreign charity." }
-    ],
-    historicalReality: "The U.S. turned sharply inward. Economic hardship strengthened strict Isolationism as Americans prioritized domestic survival over international cooperation.",
-    spectrumTag: "Strong Isolationism"
-  },
-  {
-    id: 4, phase: "Phase 2: Isolationism", date: "1931",
-    title: "Japan Invades Manchuria",
-    description: "Japan has aggressively invaded Manchuria (China), violating international peace treaties. The world watches to see if the U.S. will intervene.",
-    mapUrl: "map1.png",
-    options: [
-      { text: "Send the U.S. Navy to force Japan out of China.", isHistorical: false, isolationShift: -25, tensionShift: 15, feedback: "The public heavily protests this move. They do not want American boys dying in an Asian war." },
-      { text: "Condemn the invasion in writing, but take no action.", isHistorical: true, isolationShift: 5, tensionShift: 10, feedback: "You avoid war, but Japan ignores your letter and continues its aggressive expansion." },
-      { text: "Launch full economic sanctions against Japan.", isHistorical: false, isolationShift: -10, tensionShift: 15, feedback: "This hurts Japan's economy, but angers U.S. businesses during the Depression." }
-    ],
-    historicalReality: "The U.S. issued the 'Stimson Doctrine,' stating it would not recognize land taken by force. However, it took ZERO economic or military action, reflecting a desire to remain strictly isolated.",
-    spectrumTag: "Strong Isolationism"
-  },
-  {
-    id: 5, phase: "Phase 2: Isolationism", date: "1933-1934",
-    title: "Hitler's Rise & The Nye Committee",
-    description: "Hitler becomes Chancellor of Germany. Meanwhile, the U.S. Senate 'Nye Committee' tells the public that greedy bankers and weapons makers tricked the U.S. into entering WWI.",
-    options: [
-      { text: "Embrace the Nye findings. Swear never to be tricked into war again.", isHistorical: true, isolationShift: 15, tensionShift: 5, feedback: "Isolationist sentiment skyrockets. Americans are convinced WWI was a mistake and vow absolute neutrality." },
-      { text: "Denounce the committee. Argue dictators are the real threat.", isHistorical: false, isolationShift: -15, tensionShift: 10, feedback: "You are labeled a fearmonger. The public refuses to believe Europe's problems are America's." }
-    ],
-    historicalReality: "The Nye Committee's findings fueled massive public isolationism. Believing WWI was fought only for corporate profit, Americans strongly demanded laws to prevent aiding warring nations.",
-    spectrumTag: "Extreme Isolationism"
-  },
-  {
-    id: 6, phase: "Phase 2: Isolationism", date: "1935",
-    title: "Italy Invades Ethiopia",
-    description: "Mussolini’s fascist Italy brutally invades Ethiopia. Congress is debating a new Neutrality Act to keep America out of foreign wars.",
-    options: [
-      { text: "Ban all arms sales to ANY nation at war, victim or aggressor.", isHistorical: true, isolationShift: 15, tensionShift: 10, feedback: "You successfully keep the U.S. out of the conflict, but Ethiopia is left defenseless." },
-      { text: "Sell weapons only to the victim (Ethiopia).", isHistorical: false, isolationShift: -10, tensionShift: 15, feedback: "Congress blocks you. They fear that picking sides will inevitably drag the U.S. into the war." }
-    ],
-    historicalReality: "Congress passed the Neutrality Act of 1935, strictly banning the sale of weapons to ANY nation at war. This isolationist policy meant the U.S. could not help innocent victims of aggression.",
-    spectrumTag: "Extreme Isolationism"
-  },
-  {
-    id: 7, phase: "Phase 2: Isolationism", date: "1937",
-    title: "Neutrality Act of 1937",
-    description: "Hitler remilitarizes the Rhineland, breaking the WWI peace treaty. War seems closer. How do you adjust your neutrality laws?",
-    options: [
-      { text: "Ban Americans from traveling on ships of warring nations to avoid a Lusitania repeat.", isHistorical: true, isolationShift: 10, tensionShift: 10, feedback: "A safe choice that highly pleases the isolationist public." },
-      { text: "Demand a massive increase in the U.S. military budget.", isHistorical: false, isolationShift: -15, tensionShift: 15, feedback: "Public backlash is severe. Americans accuse you of trying to start an arms race." }
-    ],
-    historicalReality: "The Neutrality Act of 1937 banned U.S. citizens from traveling on belligerent ships and introduced 'Cash and Carry' for non-military goods, desperately trying to avoid the exact things that pulled America into WWI.",
-    spectrumTag: "Strong Isolationism"
-  },
-  {
-    id: 8, phase: "Phase 2: Isolationism", date: "1938",
-    title: "Appeasement and the Sudetenland",
-    description: "Hitler demands the Sudetenland region of Czechoslovakia. Britain and France choose 'Appeasement,' giving Hitler what he wants for a promise of peace.",
-    options: [
-      { text: "Publicly support Appeasement. Peace must be maintained at all costs.", isHistorical: true, isolationShift: 5, tensionShift: 15, feedback: "Americans are relieved war was avoided, but Hitler is emboldened." },
-      { text: "Offer American military protection to Czechoslovakia.", isHistorical: false, isolationShift: -25, tensionShift: 25, feedback: "An absolute political disaster at home. Congress refuses to back your empty threats." }
-    ],
-    historicalReality: "The U.S. passively supported the Munich Agreement (Appeasement). Isolationism remained dominant, and Americans were relieved that Britain and France surrendered land to avoid a war.",
-    spectrumTag: "Strong Isolationism"
-  },
-  // PHASE 3: Gradual Intervention
-  {
-    id: 9, phase: "Phase 3: Gradual Intervention", date: "1937",
-    title: "The Quarantine Speech",
-    description: "FDR gives the 'Quarantine Speech,' suggesting peaceful nations should financially isolate aggressor nations (like an 'epidemic').",
-    options: [
-      { text: "Push hard. We must organize a global boycott of dictators.", isHistorical: false, isolationShift: -15, tensionShift: 15, feedback: "The public reacts with intense hostility! They fear economic blockades lead straight to shooting wars." },
-      { text: "Back down immediately after massive public backlash.", isHistorical: true, isolationShift: 10, tensionShift: 10, feedback: "You maintain domestic support, but signal to the world that the U.S. is still paralyzed by isolationism." }
-    ],
-    historicalReality: "FDR gave the Quarantine Speech to test public willingness to intervene. The public backlash from isolationists was so incredibly severe that FDR had to back down immediately.",
-    spectrumTag: "Forced Isolationism"
-  },
-  {
-    id: 10, phase: "Phase 3: Gradual Intervention", date: "Sept 1939",
-    title: "Poland Invaded (WWII Begins)",
-    description: "Hitler invades Poland. WWII officially begins. Britain and France are fighting the Nazis and desperately need weapons.",
-    options: [
-      { text: "Maintain absolute neutrality. No weapon sales to anyone.", isHistorical: false, isolationShift: 15, tensionShift: 20, feedback: "You stay neutral, but Britain and France face the Nazi war machine heavily outgunned." },
-      { text: "Pass a new Neutrality Act allowing 'Cash and Carry' for weapons.", isHistorical: true, isolationShift: -15, tensionShift: 15, feedback: "A brilliant political move. You help the Allies without risking American ships or money." }
-    ],
-    historicalReality: "Realizing the danger of a Nazi victory, Congress passed the Neutrality Act of 1939. It allowed 'Cash and Carry' for weapons, marking the FIRST major shift away from strict isolationism to help the Allies.",
-    spectrumTag: "Cautious Intervention"
-  },
-  {
-    id: 11, phase: "Phase 3: Gradual Intervention", date: "Summer 1940",
-    title: "Fall of France & Destroyers for Bases",
-    description: "France has fallen to the Nazis. Britain stands alone. The isolationist 'America First Committee' screams for neutrality, but Winston Churchill begs for naval ships.",
-    options: [
-      { text: "Listen to the America First Committee. Give Britain nothing.", isHistorical: false, isolationShift: 15, tensionShift: 25, feedback: "Britain edges closer to collapse, threatening total Nazi dominance of Europe." },
-      { text: "Trade 50 old U.S. destroyers to Britain in exchange for military bases.", isHistorical: true, isolationShift: -15, tensionShift: 15, feedback: "A clever workaround. You bypass strict neutrality laws by calling it a 'trade' that benefits U.S. defense." }
-    ],
-    historicalReality: "FDR executed the 'Destroyers for Bases' deal. The U.S. gave Britain 50 old naval ships in exchange for leases on British bases, bending neutrality rules to keep Britain in the fight.",
-    spectrumTag: "Active Intervention"
-  },
-  {
-    id: 12, phase: "Phase 3: Gradual Intervention", date: "Sept 1940",
-    title: "The Selective Service Act",
-    description: "The world is on fire, but the U.S. military is tiny and unequipped. Do you institute a military draft even though the U.S. is not officially at war?",
-    options: [
-      { text: "Yes, institute the first peacetime draft in U.S. history.", isHistorical: true, isolationShift: -20, tensionShift: 10, feedback: "Mothers protest and isolationists rage, but your military finally begins to modernize and grow." },
-      { text: "No, rely strictly on voluntary enlistment to keep the peace.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "The public is happy, but your generals warn that the nation is entirely unprepared if attacked." }
-    ],
-    historicalReality: "Congress passed the Selective Training and Service Act of 1940, the first peacetime draft in U.S. history. It was a massive step in war readiness despite immense isolationist pushback.",
-    spectrumTag: "War Preparedness"
-  },
-  {
-    id: 13, phase: "Phase 3: Gradual Intervention", date: "Early 1941",
-    title: "Lend-Lease Act",
-    description: "Britain is bankrupt and can no longer pay 'Cash' for weapons. FDR proposes becoming the 'Arsenal of Democracy' and simply lending weapons to allies.",
-    options: [
-      { text: "Pass Lend-Lease. Send massive amounts of free weapons to Britain.", isHistorical: true, isolationShift: -25, tensionShift: 20, feedback: "America officially abandons neutrality in practice, providing a massive lifeline to the Allies." },
-      { text: "Refuse. If they can't pay, they get no weapons.", isHistorical: false, isolationShift: 15, tensionShift: 25, feedback: "Britain's war effort grinds to a halt. A Nazi victory in Europe seems imminent." }
-    ],
-    historicalReality: "Congress passed Lend-Lease. The U.S. fully abandoned the pretense of neutrality, loaning billions in weapons to Britain (and the USSR) to defeat fascism, becoming the 'Arsenal of Democracy.'",
-    spectrumTag: "Heavy Intervention"
-  },
-  {
-    id: 14, phase: "Phase 3: Gradual Intervention", date: "Mid-Late 1941",
-    title: "The Atlantic Charter",
-    description: "Hitler invades the Soviet Union. FDR and Churchill meet secretly to draft war aims, while U.S. ships are ordered to 'shoot on sight' at German U-boats.",
-    options: [
-      { text: "Embrace the alliance. Order the Navy to protect supply shipments.", isHistorical: true, isolationShift: -20, tensionShift: 20, feedback: "An undeclared naval war begins in the Atlantic. The U.S. is at war in everything but name." },
-      { text: "Pull back U.S. ships. Avoid provoking the German Navy.", isHistorical: false, isolationShift: 15, tensionShift: 10, feedback: "You avoid naval clashes, but Lend-Lease supplies are sunk, starving the British." }
-    ],
-    historicalReality: "FDR and Churchill signed the Atlantic Charter. By late 1941, the U.S. Navy was actively fighting German U-boats to protect Lend-Lease shipments. Isolationism was dead.",
-    spectrumTag: "Undeclared War"
-  }
-];
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-// --- MAIN COMPONENT ---
-export default function App() {
-  const [gameState, setGameState] = useState('start'); 
-  const [currentEventIndex, setCurrentEventIndex] = useState(0);
-  const [scores, setScores] = useState(INITIAL_SCORES);
-  const [hasAnsweredCurrent, setHasAnsweredCurrent] = useState(false);
-  const [currentFeedback, setCurrentFeedback] = useState("");
-  const [isMatch, setIsMatch] = useState(false);
-  const [canProceed, setCanProceed] = useState(false);
+        // --- GAME DATA ---
+        const INITIAL_SCORES = {
+          isolationism: 80,
+          tension: 10,
+          matches: 0
+        };
 
-  const event = EVENTS[currentEventIndex];
+        const EVENTS = [
+          {
+            id: 1, phase: "Phase 1: Idealistic Diplomacy", date: "1921",
+            title: "Washington Naval Conference",
+            description: "Following WWI, nations are worried about an expensive naval arms race. Major powers have gathered in Washington to discuss limiting the size of their navies.",
+            options: [
+              { text: "Propose massive, equal cuts to all major navies, including our own.", isHistorical: true, isolationShift: 0, tensionShift: -10, feedback: "You proposed the Five-Power Treaty. It's popular at home and eases global tensions, though it weakens your fleet." },
+              { text: "Refuse to limit the U.S. Navy, but ask others to cut theirs.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "Other nations reject this hypocrisy. An arms race continues." },
+              { text: "Form a strict military alliance with Britain and Japan.", isHistorical: false, isolationShift: -20, tensionShift: 5, feedback: "Americans are outraged! They want to avoid foreign entanglements and reject alliances." }
+            ],
+            historicalReality: "The U.S. led the conference and proposed the Five-Power Treaty, agreeing to scrap many existing ships to prevent an arms race. This was a classic 'Idealistic Diplomacy' move—hoping treaties could replace weapons.",
+            spectrumTag: "Idealistic / Neutral"
+          },
+          {
+            id: 2, phase: "Phase 1: Idealistic Diplomacy", date: "1928",
+            title: "The Kellogg-Briand Pact",
+            description: "France proposes a treaty to effectively 'outlaw war' as a tool of national policy. Over 60 nations are ready to sign. Should the U.S. join?",
+            options: [
+              { text: "Sign the treaty. A promise of peace is exactly what the world needs.", isHistorical: true, isolationShift: 5, tensionShift: -10, feedback: "The public loves this idealistic pledge for peace, though it lacks any real enforcement mechanism." },
+              { text: "Refuse to sign. Treaties without military backing are useless.", isHistorical: false, isolationShift: 10, tensionShift: 5, feedback: "You are heavily criticized for failing to support global peace efforts." }
+            ],
+            historicalReality: "The U.S. enthusiastically signed the Pact, effectively 'outlawing war.' It was the peak of hoping promises alone could prevent future conflict, keeping the U.S. out of actual military alliances.",
+            spectrumTag: "Idealistic / Neutral"
+          },
+          {
+            id: 3, phase: "Phase 2: Isolationism", date: "1929-1930",
+            title: "The Great Depression Takes Hold",
+            description: "The stock market has crashed and millions of Americans are losing their jobs. Global trade is collapsing. Where should the government focus its attention?",
+            options: [
+              { text: "Focus entirely inward on the domestic economy. Ignore overseas issues.", isHistorical: true, isolationShift: 15, tensionShift: 5, feedback: "Americans appreciate the focus on their suffering, but the lack of U.S. global leadership allows overseas crises to grow." },
+              { text: "Forgive international debts to stimulate the global economy.", isHistorical: false, isolationShift: -10, tensionShift: -5, feedback: "The American public is furious! They demand domestic relief, not foreign charity." }
+            ],
+            historicalReality: "The U.S. turned sharply inward. Economic hardship strengthened strict Isolationism as Americans prioritized domestic survival over international cooperation.",
+            spectrumTag: "Strong Isolationism"
+          },
+          {
+            id: 4, phase: "Phase 2: Isolationism", date: "1931",
+            title: "Japan Invades Manchuria",
+            description: "Japan has aggressively invaded Manchuria (China), violating international peace treaties. The world watches to see if the U.S. will intervene.",
+            mapUrl: "map1.png",
+            options: [
+              { text: "Send the U.S. Navy to force Japan out of China.", isHistorical: false, isolationShift: -25, tensionShift: 15, feedback: "The public heavily protests this move. They do not want American boys dying in an Asian war." },
+              { text: "Condemn the invasion in writing, but take no action.", isHistorical: true, isolationShift: 5, tensionShift: 10, feedback: "You avoid war, but Japan ignores your letter and continues its aggressive expansion." },
+              { text: "Launch full economic sanctions against Japan.", isHistorical: false, isolationShift: -10, tensionShift: 15, feedback: "This hurts Japan's economy, but angers U.S. businesses during the Depression." }
+            ],
+            historicalReality: "The U.S. issued the 'Stimson Doctrine,' stating it would not recognize land taken by force. However, it took ZERO economic or military action, reflecting a desire to remain strictly isolated.",
+            spectrumTag: "Strong Isolationism"
+          },
+          {
+            id: 5, phase: "Phase 2: Isolationism", date: "1933-1934",
+            title: "Hitler's Rise & The Nye Committee",
+            description: "Hitler becomes Chancellor of Germany. Meanwhile, the U.S. Senate 'Nye Committee' tells the public that greedy bankers and weapons makers tricked the U.S. into entering WWI.",
+            options: [
+              { text: "Embrace the Nye findings. Swear never to be tricked into war again.", isHistorical: true, isolationShift: 15, tensionShift: 5, feedback: "Isolationist sentiment skyrockets. Americans are convinced WWI was a mistake and vow absolute neutrality." },
+              { text: "Denounce the committee. Argue dictators are the real threat.", isHistorical: false, isolationShift: -15, tensionShift: 10, feedback: "You are labeled a fearmonger. The public refuses to believe Europe's problems are America's." }
+            ],
+            historicalReality: "The Nye Committee's findings fueled massive public isolationism. Believing WWI was fought only for corporate profit, Americans strongly demanded laws to prevent aiding warring nations.",
+            spectrumTag: "Extreme Isolationism"
+          },
+          {
+            id: 6, phase: "Phase 2: Isolationism", date: "1935",
+            title: "Italy Invades Ethiopia",
+            description: "Mussolini’s fascist Italy brutally invades Ethiopia. Congress is debating a new Neutrality Act to keep America out of foreign wars.",
+            options: [
+              { text: "Ban all arms sales to ANY nation at war, victim or aggressor.", isHistorical: true, isolationShift: 15, tensionShift: 10, feedback: "You successfully keep the U.S. out of the conflict, but Ethiopia is left defenseless." },
+              { text: "Sell weapons only to the victim (Ethiopia).", isHistorical: false, isolationShift: -10, tensionShift: 15, feedback: "Congress blocks you. They fear that picking sides will inevitably drag the U.S. into the war." }
+            ],
+            historicalReality: "Congress passed the Neutrality Act of 1935, strictly banning the sale of weapons to ANY nation at war. This isolationist policy meant the U.S. could not help innocent victims of aggression.",
+            spectrumTag: "Extreme Isolationism"
+          },
+          {
+            id: 7, phase: "Phase 2: Isolationism", date: "1937",
+            title: "Neutrality Act of 1937",
+            description: "Hitler remilitarizes the Rhineland, breaking the WWI peace treaty. War seems closer. How do you adjust your neutrality laws?",
+            options: [
+              { text: "Ban Americans from traveling on ships of warring nations to avoid a Lusitania repeat.", isHistorical: true, isolationShift: 10, tensionShift: 10, feedback: "A safe choice that highly pleases the isolationist public." },
+              { text: "Demand a massive increase in the U.S. military budget.", isHistorical: false, isolationShift: -15, tensionShift: 15, feedback: "Public backlash is severe. Americans accuse you of trying to start an arms race." }
+            ],
+            historicalReality: "The Neutrality Act of 1937 banned U.S. citizens from traveling on belligerent ships and introduced 'Cash and Carry' for non-military goods, desperately trying to avoid the exact things that pulled America into WWI.",
+            spectrumTag: "Strong Isolationism"
+          },
+          {
+            id: 8, phase: "Phase 2: Isolationism", date: "1938",
+            title: "Appeasement and the Sudetenland",
+            description: "Hitler demands the Sudetenland region of Czechoslovakia. Britain and France choose 'Appeasement,' giving Hitler what he wants for a promise of peace.",
+            options: [
+              { text: "Publicly support Appeasement. Peace must be maintained at all costs.", isHistorical: true, isolationShift: 5, tensionShift: 15, feedback: "Americans are relieved war was avoided, but Hitler is emboldened." },
+              { text: "Offer American military protection to Czechoslovakia.", isHistorical: false, isolationShift: -25, tensionShift: 25, feedback: "An absolute political disaster at home. Congress refuses to back your empty threats." }
+            ],
+            historicalReality: "The U.S. passively supported the Munich Agreement (Appeasement). Isolationism remained dominant, and Americans were relieved that Britain and France surrendered land to avoid a war.",
+            spectrumTag: "Strong Isolationism"
+          },
+          {
+            id: 9, phase: "Phase 3: Gradual Intervention", date: "1937",
+            title: "The Quarantine Speech",
+            description: "FDR gives the 'Quarantine Speech,' suggesting peaceful nations should financially isolate aggressor nations (like an 'epidemic').",
+            options: [
+              { text: "Push hard. We must organize a global boycott of dictators.", isHistorical: false, isolationShift: -15, tensionShift: 15, feedback: "The public reacts with intense hostility! They fear economic blockades lead straight to shooting wars." },
+              { text: "Back down immediately after massive public backlash.", isHistorical: true, isolationShift: 10, tensionShift: 10, feedback: "You maintain domestic support, but signal to the world that the U.S. is still paralyzed by isolationism." }
+            ],
+            historicalReality: "FDR gave the Quarantine Speech to test public willingness to intervene. The public backlash from isolationists was so incredibly severe that FDR had to back down immediately.",
+            spectrumTag: "Forced Isolationism"
+          },
+          {
+            id: 10, phase: "Phase 3: Gradual Intervention", date: "Sept 1939",
+            title: "Poland Invaded (WWII Begins)",
+            description: "Hitler invades Poland. WWII officially begins. Britain and France are fighting the Nazis and desperately need weapons.",
+            options: [
+              { text: "Maintain absolute neutrality. No weapon sales to anyone.", isHistorical: false, isolationShift: 15, tensionShift: 20, feedback: "You stay neutral, but Britain and France face the Nazi war machine heavily outgunned." },
+              { text: "Pass a new Neutrality Act allowing 'Cash and Carry' for weapons.", isHistorical: true, isolationShift: -15, tensionShift: 15, feedback: "A brilliant political move. You help the Allies without risking American ships or money." }
+            ],
+            historicalReality: "Realizing the danger of a Nazi victory, Congress passed the Neutrality Act of 1939. It allowed 'Cash and Carry' for weapons, marking the FIRST major shift away from strict isolationism to help the Allies.",
+            spectrumTag: "Cautious Intervention"
+          },
+          {
+            id: 11, phase: "Phase 3: Gradual Intervention", date: "Summer 1940",
+            title: "Fall of France & Destroyers for Bases",
+            description: "France has fallen to the Nazis. Britain stands alone. The isolationist 'America First Committee' screams for neutrality, but Winston Churchill begs for naval ships.",
+            options: [
+              { text: "Listen to the America First Committee. Give Britain nothing.", isHistorical: false, isolationShift: 15, tensionShift: 25, feedback: "Britain edges closer to collapse, threatening total Nazi dominance of Europe." },
+              { text: "Trade 50 old U.S. destroyers to Britain in exchange for military bases.", isHistorical: true, isolationShift: -15, tensionShift: 15, feedback: "A clever workaround. You bypass strict neutrality laws by calling it a 'trade' that benefits U.S. defense." }
+            ],
+            historicalReality: "FDR executed the 'Destroyers for Bases' deal. The U.S. gave Britain 50 old naval ships in exchange for leases on British bases, bending neutrality rules to keep Britain in the fight.",
+            spectrumTag: "Active Intervention"
+          },
+          {
+            id: 12, phase: "Phase 3: Gradual Intervention", date: "Sept 1940",
+            title: "The Selective Service Act",
+            description: "The world is on fire, but the U.S. military is tiny and unequipped. Do you institute a military draft even though the U.S. is not officially at war?",
+            options: [
+              { text: "Yes, institute the first peacetime draft in U.S. history.", isHistorical: true, isolationShift: -20, tensionShift: 10, feedback: "Mothers protest and isolationists rage, but your military finally begins to modernize and grow." },
+              { text: "No, rely strictly on voluntary enlistment to keep the peace.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "The public is happy, but your generals warn that the nation is entirely unprepared if attacked." }
+            ],
+            historicalReality: "Congress passed the Selective Training and Service Act of 1940, the first peacetime draft in U.S. history. It was a massive step in war readiness despite immense isolationist pushback.",
+            spectrumTag: "War Preparedness"
+          },
+          {
+            id: 13, phase: "Phase 3: Gradual Intervention", date: "Early 1941",
+            title: "Lend-Lease Act",
+            description: "Britain is bankrupt and can no longer pay 'Cash' for weapons. FDR proposes becoming the 'Arsenal of Democracy' and simply lending weapons to allies.",
+            options: [
+              { text: "Pass Lend-Lease. Send massive amounts of free weapons to Britain.", isHistorical: true, isolationShift: -25, tensionShift: 20, feedback: "America officially abandons neutrality in practice, providing a massive lifeline to the Allies." },
+              { text: "Refuse. If they can't pay, they get no weapons.", isHistorical: false, isolationShift: 15, tensionShift: 25, feedback: "Britain's war effort grinds to a halt. A Nazi victory in Europe seems imminent." }
+            ],
+            historicalReality: "Congress passed Lend-Lease. The U.S. fully abandoned the pretense of neutrality, loaning billions in weapons to Britain (and the USSR) to defeat fascism, becoming the 'Arsenal of Democracy.'",
+            spectrumTag: "Heavy Intervention"
+          },
+          {
+            id: 14, phase: "Phase 3: Gradual Intervention", date: "Mid-Late 1941",
+            title: "The Atlantic Charter",
+            description: "Hitler invades the Soviet Union. FDR and Churchill meet secretly to draft war aims, while U.S. ships are ordered to 'shoot on sight' at German U-boats.",
+            options: [
+              { text: "Embrace the alliance. Order the Navy to protect supply shipments.", isHistorical: true, isolationShift: -20, tensionShift: 20, feedback: "An undeclared naval war begins in the Atlantic. The U.S. is at war in everything but name." },
+              { text: "Pull back U.S. ships. Avoid provoking the German Navy.", isHistorical: false, isolationShift: 15, tensionShift: 10, feedback: "You avoid naval clashes, but Lend-Lease supplies are sunk, starving the British." }
+            ],
+            historicalReality: "FDR and Churchill signed the Atlantic Charter. By late 1941, the U.S. Navy was actively fighting German U-boats to protect Lend-Lease shipments. Isolationism was dead.",
+            spectrumTag: "Undeclared War"
+          }
+        ];
 
-  const clamp = (val) => Math.min(Math.max(val, 0), 100);
+        function App() {
+          const [gameState, setGameState] = useState('start'); 
+          const [currentEventIndex, setCurrentEventIndex] = useState(0);
+          const [scores, setScores] = useState(INITIAL_SCORES);
+          const [hasAnsweredCurrent, setHasAnsweredCurrent] = useState(false);
+          const [currentFeedback, setCurrentFeedback] = useState("");
+          const [isMatch, setIsMatch] = useState(false);
+          const [canProceed, setCanProceed] = useState(false);
 
-  const handleStart = () => setGameState('intro');
-  const handleBeginGame = () => setGameState('game');
+          const event = EVENTS[currentEventIndex];
 
-  const handleOptionSelect = (option) => {
-    if (hasAnsweredCurrent) return;
+          const clamp = (val) => Math.min(Math.max(val, 0), 100);
 
-    setScores(prev => ({
-      ...prev,
-      isolationism: clamp(prev.isolationism + option.isolationShift),
-      tension: clamp(prev.tension + option.tensionShift),
-      matches: option.isHistorical ? prev.matches + 1 : prev.matches
-    }));
+          const handleStart = () => setGameState('intro');
+          const handleBeginGame = () => setGameState('game');
 
-    setIsMatch(option.isHistorical);
-    setCurrentFeedback(option.feedback);
-    setHasAnsweredCurrent(true);
-    setCanProceed(false); // Disable proceed button temporarily
+          const handleOptionSelect = (option) => {
+            if (hasAnsweredCurrent) return;
 
-    // Force students to look at the screen before clicking next (3 seconds)
-    setTimeout(() => {
-      setCanProceed(true);
-    }, 3000);
-  };
+            setScores(prev => ({
+              ...prev,
+              isolationism: clamp(prev.isolationism + option.isolationShift),
+              tension: clamp(prev.tension + option.tensionShift),
+              matches: option.isHistorical ? prev.matches + 1 : prev.matches
+            }));
 
-  const handleNextEvent = () => {
-    if (currentEventIndex < EVENTS.length - 1) {
-      setCurrentEventIndex(prev => prev + 1);
-      setHasAnsweredCurrent(false);
-      setCurrentFeedback("");
-      setIsMatch(false);
-    } else {
-      setGameState('results');
-    }
-  };
+            setIsMatch(option.isHistorical);
+            setCurrentFeedback(option.feedback);
+            setHasAnsweredCurrent(true);
+            setCanProceed(false);
 
-  const getPhaseColor = (phaseText) => {
-    if (phaseText.includes("Phase 1")) return "text-blue-700 bg-blue-100 border-blue-300";
-    if (phaseText.includes("Phase 2")) return "text-amber-700 bg-amber-100 border-amber-300";
-    return "text-red-700 bg-red-100 border-red-300";
-  };
+            setTimeout(() => {
+              setCanProceed(true);
+            }, 3000);
+          };
 
-  // --- SUB-COMPONENTS ---
+          const handleNextEvent = () => {
+            if (currentEventIndex < EVENTS.length - 1) {
+              setCurrentEventIndex(prev => prev + 1);
+              setHasAnsweredCurrent(false);
+              setCurrentFeedback("");
+              setIsMatch(false);
+            } else {
+              setGameState('results');
+            }
+          };
 
-  const StartScreen = () => (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-200 p-6 text-center">
-      <div className="bg-white p-10 rounded-xl shadow-2xl max-w-2xl border-4 border-slate-700">
-        <Globe className="w-20 h-20 mx-auto text-slate-700 mb-6" />
-        <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 uppercase tracking-widest">The Road to War</h1>
-        <h2 className="text-2xl text-slate-600 mb-8 font-serif italic">How Isolationist Was America?</h2>
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 text-left text-slate-700 font-medium">
-          <p className="mb-2"><strong>Your Mission:</strong> Guide the U.S. from 1920 to 1941.</p>
-          <p className="mb-2"><strong>The Goal:</strong> Try to guess the actual historical decisions made by U.S. leaders.</p>
-          <p><strong>Required:</strong> Have your paper worksheet ready! You will need to record the "Historical Reality" after every event.</p>
-        </div>
-        <button 
-          onClick={handleStart}
-          className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition transform hover:scale-105 flex items-center justify-center mx-auto"
-        >
-          Enter the Briefing Room <ChevronRight className="ml-2" />
-        </button>
-      </div>
-    </div>
-  );
+          const getPhaseColor = (phaseText) => {
+            if (phaseText.includes("Phase 1")) return "text-blue-700 bg-blue-100 border-blue-300";
+            if (phaseText.includes("Phase 2")) return "text-amber-700 bg-amber-100 border-amber-300";
+            return "text-red-700 bg-red-100 border-red-300";
+          };
 
-  const IntroScreen = () => (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-200 p-6">
-      <div className="bg-white p-8 md:p-12 rounded-xl shadow-2xl max-w-3xl border-l-8 border-blue-700">
-        <h2 className="text-3xl font-black text-slate-800 mb-6 border-b-2 border-slate-200 pb-2 flex items-center">
-          <FileText className="mr-3 text-blue-700" /> Executive Briefing: 1919
-        </h2>
-        
-        <div className="space-y-6 text-lg text-slate-700">
-          <p>
-            <strong>The World War is over.</strong> President Woodrow Wilson went to Europe with idealistic dreams of making the world "safe for democracy." 
-          </p>
-          <p>
-            However, the resulting <strong>Treaty of Versailles</strong> severely punished Germany. The U.S. Senate, fearing it would drag America into future European conflicts, completely <strong>rejected the League of Nations</strong>. 
-          </p>
-          <div className="bg-amber-100 p-6 rounded-lg border-2 border-amber-400 font-bold text-amber-900">
-            "Your challenge is to watch how American foreign policy shifts. We start with a strong desire to stay out of world affairs (Isolationism). Watch the meter at the top of the screen to see how world events push America toward Intervention."
-          </div>
-        </div>
-
-        <div className="mt-10 text-center">
-          <button 
-            onClick={handleBeginGame}
-            className="bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition transform hover:scale-105"
-          >
-            Start the Simulation
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const TopNav = () => (
-    <div className="bg-slate-800 text-white p-4 sticky top-0 z-50 shadow-md">
-      <div className="max-w-5xl mx-auto space-y-4">
-        
-        {/* Top row: Timeline and Tension */}
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex items-center space-x-2 w-full max-w-md">
-            <span className="font-bold uppercase tracking-wider text-xs text-slate-300">Timeline:</span>
-            <div className="flex-1 flex gap-1 bg-slate-700 p-1 rounded">
-              {EVENTS.map((e, idx) => (
-                <div 
-                  key={e.id} 
-                  className={`h-2 flex-1 rounded-sm ${
-                    idx < currentEventIndex ? 'bg-blue-400' : 
-                    idx === currentEventIndex ? 'bg-yellow-400 animate-pulse' : 'bg-slate-600'
-                  }`}
-                />
-              ))}
+          const StartScreen = () => (
+            <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+              <div className="bg-white p-10 rounded-xl shadow-2xl max-w-2xl border-4 border-slate-700">
+                <i className="fas fa-globe text-slate-700 text-6xl mb-6"></i>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-800 mb-4 uppercase tracking-widest">The Road to War</h1>
+                <h2 className="text-2xl text-slate-600 mb-8 font-serif italic">How Isolationist Was America?</h2>
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 text-left text-slate-700 font-medium">
+                  <p className="mb-2"><strong>Your Mission:</strong> Guide the U.S. from 1920 to 1941.</p>
+                  <p className="mb-2"><strong>The Goal:</strong> Try to guess the actual historical decisions made by U.S. leaders.</p>
+                  <p><strong>Required:</strong> Have your paper worksheet ready! You will need to record the "Historical Reality" after every event.</p>
+                </div>
+                <button 
+                  onClick={handleStart}
+                  className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition transform hover:scale-105 flex items-center justify-center mx-auto"
+                >
+                  Enter the Briefing Room <i className="fas fa-chevron-right ml-2"></i>
+                </button>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center bg-slate-700 px-3 py-1 rounded border border-slate-600">
-            <AlertTriangle className={`w-5 h-5 mr-2 ${scores.tension > 70 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`} />
-            <span className="font-bold">World Tension: {scores.tension}%</span>
-          </div>
-        </div>
+          );
 
-        {/* Bottom row: The Big Isolationism Meter */}
-        <div className="bg-slate-900 p-3 rounded-lg border border-slate-700 relative">
-          <div className="flex justify-between text-xs font-black uppercase mb-1 text-slate-400">
-            <span className="text-blue-400">Active Intervention (0)</span>
-            <span className="text-amber-400">Neutral (50)</span>
-            <span className="text-red-400">Strict Isolationism (100)</span>
-          </div>
-          
-          <div className="h-6 w-full bg-gradient-to-r from-blue-600 via-amber-500 to-red-600 rounded-full relative shadow-inner">
-            {/* The Needle */}
-            <div 
-              className="absolute top-0 bottom-0 w-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] border-2 border-slate-900 transition-all duration-1000 ease-in-out z-10"
-              style={{ left: `${100 - scores.isolationism}%`, transform: 'translateX(-50%)' }} // Inverted so 100 Isolationism is on the right
-            />
-            {/* Center Line */}
-            <div className="absolute top-0 bottom-0 w-0.5 bg-slate-900 left-1/2 opacity-50" />
-          </div>
-          <div className="text-center text-sm font-bold mt-1 text-white">
-            Current U.S. Stance: <span className="text-yellow-300">{scores.isolationism} / 100</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-
-  const GameScreen = () => (
-    <div className="min-h-screen bg-stone-200 flex flex-col">
-      <TopNav />
-      
-      <main className="flex-1 max-w-4xl mx-auto p-4 w-full mt-6 mb-12">
-        {/* Phase Indicator */}
-        <div className={`text-center py-2 px-4 rounded-full font-bold mb-6 border-2 inline-block mx-auto ${getPhaseColor(event.phase)} shadow-sm`}>
-          {event.phase}
-        </div>
-
-        {/* Event Card */}
-        <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-300">
-          <div className="bg-slate-700 text-white p-4 flex justify-between items-center">
-            <h2 className="text-2xl font-black">{event.title}</h2>
-            <span className="bg-slate-800 px-3 py-1 rounded font-mono font-bold border border-slate-600 text-yellow-400">{event.date}</span>
-          </div>
-          
-          <div className="p-6 md:p-8">
-            
-            {/* Optional Map / Image Display */}
-            {event.mapUrl && (
-              <div className="mb-6 rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-50 flex justify-center">
-                <img 
-                  src={event.mapUrl} 
-                  alt={`Map for ${event.title}`} 
-                  className="w-full h-auto max-h-72 object-cover md:object-contain" 
-                />
-              </div>
-            )}
-
-            <p className="text-xl text-slate-700 leading-relaxed mb-8 border-l-4 border-slate-300 pl-4">
-              {event.description}
-            </p>
-
-            {!hasAnsweredCurrent ? (
-              <div className="space-y-4">
-                <h3 className="text-md font-bold text-slate-500 uppercase tracking-wide mb-2">As a U.S. Leader, what do you choose?</h3>
-                {event.options.map((opt, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleOptionSelect(opt)}
-                    className="w-full text-left p-4 rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition shadow-sm font-medium text-lg text-slate-800"
-                  >
-                    {opt.text}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="animate-fade-in-up space-y-6">
+          const IntroScreen = () => (
+            <div className="flex flex-col items-center justify-center min-h-screen p-6">
+              <div className="bg-white p-8 md:p-12 rounded-xl shadow-2xl max-w-3xl border-l-8 border-blue-700">
+                <h2 className="text-3xl font-black text-slate-800 mb-6 border-b-2 border-slate-200 pb-2 flex items-center">
+                  <i className="fas fa-file-alt mr-3 text-blue-700"></i> Executive Briefing: 1919
+                </h2>
                 
-                {/* Did they guess history? */}
-                <div className={`p-4 rounded-lg border-2 flex items-center shadow-sm ${isMatch ? 'bg-green-100 border-green-500 text-green-900' : 'bg-red-50 border-red-400 text-red-900'}`}>
-                  {isMatch ? <CheckCircle className="w-8 h-8 mr-3 text-green-600"/> : <XCircle className="w-8 h-8 mr-3 text-red-500"/>}
-                  <div>
-                    <h4 className="font-black text-lg">{isMatch ? "Historical Match!" : "Not Quite History..."}</h4>
-                    <p className="text-md opacity-90">{currentFeedback}</p>
+                <div className="space-y-6 text-lg text-slate-700">
+                  <p>
+                    <strong>The World War is over.</strong> President Woodrow Wilson went to Europe with idealistic dreams of making the world "safe for democracy." 
+                  </p>
+                  <p>
+                    However, the resulting <strong>Treaty of Versailles</strong> severely punished Germany. The U.S. Senate, fearing it would drag America into future European conflicts, completely <strong>rejected the League of Nations</strong>. 
+                  </p>
+                  <div className="bg-amber-100 p-6 rounded-lg border-2 border-amber-400 font-bold text-amber-900">
+                    "Your challenge is to watch how American foreign policy shifts. We start with a strong desire to stay out of world affairs (Isolationism). Watch the meter at the top of the screen to see how world events push America toward Intervention."
                   </div>
                 </div>
 
-                {/* PAPER WORKSHEET ALERT */}
-                <div className="bg-yellow-100 p-6 rounded-xl border-4 border-yellow-400 shadow-lg relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 px-3 py-1 font-black text-sm rounded-bl-lg">
-                    {event.spectrumTag}
-                  </div>
-                  
-                  <h4 className="font-black text-yellow-900 mb-3 flex items-center text-2xl uppercase tracking-wide border-b-2 border-yellow-300 pb-2">
-                    <PenTool className="w-8 h-8 mr-3 text-yellow-700 animate-pulse"/> Stop & Write
-                  </h4>
-                  
-                  <p className="font-bold text-slate-700 mb-2">Grab your paper worksheet and record this historical reality for {event.date}:</p>
-                  
-                  <div className="bg-white p-4 rounded border border-yellow-300 text-xl font-serif text-slate-800 leading-relaxed shadow-inner">
-                    {event.historicalReality}
-                  </div>
-                </div>
-
-                <div className="text-right pt-4">
+                <div className="mt-10 text-center">
                   <button 
-                    onClick={handleNextEvent}
-                    disabled={!canProceed}
-                    className={`font-bold py-4 px-8 rounded-lg text-xl shadow-md transition ${
-                      canProceed 
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transform hover:scale-105' 
-                      : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-70'
-                    }`}
+                    onClick={handleBeginGame}
+                    className="bg-green-700 hover:bg-green-800 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition transform hover:scale-105"
                   >
-                    {canProceed ? "I have written this down. Next Event" : "Please read and write... (Wait 3s)"} <ChevronRight className="inline ml-1" />
+                    Start the Simulation
                   </button>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-
-  const ResultsScreen = () => {
-    return (
-      <div className="min-h-screen bg-stone-200 p-6 py-12 flex flex-col items-center justify-center">
-        <div className="max-w-3xl w-full bg-white rounded-xl shadow-2xl overflow-hidden border-4 border-slate-800">
-          
-          {/* Header */}
-          <div className="bg-slate-800 text-white p-10 text-center">
-            <Flag className="w-20 h-20 mx-auto mb-4 text-yellow-400" />
-            <h1 className="text-5xl font-black mb-2 uppercase tracking-widest">End of the Line</h1>
-            <p className="text-2xl text-slate-300 font-serif italic">December 1941: The United States is at War.</p>
-          </div>
-
-          <div className="p-10 space-y-8">
-            <div className="text-center">
-              <h2 className="text-3xl font-black text-slate-800 mb-2 flex justify-center items-center">
-                <Award className="w-8 h-8 mr-2 text-blue-600"/> Historian Score: {scores.matches} / 14
-              </h2>
-              <p className="text-lg text-slate-600">You accurately guessed the historical decisions {scores.matches} times.</p>
             </div>
+          );
 
-            <div className="bg-amber-50 border-l-8 border-amber-500 p-6 rounded-r-lg shadow-md">
-              <h3 className="text-2xl font-bold text-amber-900 mb-3">Final Assignment:</h3>
-              <p className="text-lg text-slate-800 leading-relaxed mb-4">
-                Now that you have seen the U.S. move from the idealistic 1920s, through the strict isolationism of the 1930s, and finally into the gradual intervention of 1941, it is time to answer the big question.
-              </p>
-              <div className="bg-white p-4 rounded border-2 border-dashed border-amber-300 text-center">
-                <p className="font-black text-xl text-slate-800 uppercase text-red-600">
-                  Flip your paper worksheet over.
-                </p>
-                <p className="text-lg font-bold mt-2">
-                  Complete the final reflection questions using the notes you just took.
-                </p>
+          const TopNav = () => (
+            <div className="bg-slate-800 text-white p-4 sticky top-0 z-50 shadow-md">
+              <div className="max-w-5xl mx-auto space-y-4">
+                <div className="flex justify-between items-center gap-4">
+                  <div className="flex items-center space-x-2 w-full max-w-md">
+                    <span className="font-bold uppercase tracking-wider text-xs text-slate-300">Timeline:</span>
+                    <div className="flex-1 flex gap-1 bg-slate-700 p-1 rounded">
+                      {EVENTS.map((e, idx) => (
+                        <div 
+                          key={e.id} 
+                          className={`h-2 flex-1 rounded-sm ${
+                            idx < currentEventIndex ? 'bg-blue-400' : 
+                            idx === currentEventIndex ? 'bg-yellow-400 animate-pulse' : 'bg-slate-600'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center bg-slate-700 px-3 py-1 rounded border border-slate-600">
+                    <i className={`fas fa-exclamation-triangle mr-2 ${scores.tension > 70 ? 'text-red-500 animate-bounce' : 'text-yellow-400'}`}></i>
+                    <span className="font-bold">World Tension: {scores.tension}%</span>
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 p-3 rounded-lg border border-slate-700 relative">
+                  <div className="flex justify-between text-xs font-black uppercase mb-1 text-slate-400">
+                    <span className="text-blue-400">Active Intervention (0)</span>
+                    <span className="text-amber-400">Neutral (50)</span>
+                    <span className="text-red-400">Strict Isolationism (100)</span>
+                  </div>
+                  
+                  <div className="h-6 w-full bg-gradient-to-r from-blue-600 via-amber-500 to-red-600 rounded-full relative shadow-inner">
+                    <div 
+                      className="absolute top-0 bottom-0 w-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] border-2 border-slate-900 transition-all duration-1000 ease-in-out z-10"
+                      style={{ left: `${100 - scores.isolationism}%`, transform: 'translateX(-50%)' }} 
+                    />
+                    <div className="absolute top-0 bottom-0 w-0.5 bg-slate-900 left-1/2 opacity-50" />
+                  </div>
+                  <div className="text-center text-sm font-bold mt-1 text-white">
+                    Current U.S. Stance: <span className="text-yellow-300">{scores.isolationism} / 100</span>
+                  </div>
+                </div>
               </div>
             </div>
-            
-            <div className="text-center pt-6 border-t-2 border-slate-100">
-              <p className="text-slate-500 font-medium">You may close this device when you are finished writing.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+          );
 
-  // --- RENDER ROUTING ---
-  return (
-    <div className="font-sans antialiased text-slate-900">
-      {gameState === 'start' && <StartScreen />}
-      {gameState === 'intro' && <IntroScreen />}
-      {gameState === 'game' && <GameScreen />}
-      {gameState === 'results' && <ResultsScreen />}
-    </div>
+          const GameScreen = () => (
+            <div className="min-h-screen flex flex-col">
+              <TopNav />
+              
+              <main className="flex-1 max-w-4xl mx-auto p-4 w-full mt-6 mb-12">
+                <div className={`text-center py-2 px-4 rounded-full font-bold mb-6 border-2 inline-block mx-auto ${getPhaseColor(event.phase)} shadow-sm`}>
+                  {event.phase}
+                </div>
+
+                <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-300">
+                  <div className="bg-slate-700 text-white p-4 flex justify-between items-center">
+                    <h2 className="text-2xl font-black">{event.title}</h2>
+                    <span className="bg-slate-800 px-3 py-1 rounded font-mono font-bold border border-slate-600 text-yellow-400">{event.date}</span>
+                  </div>
+                  
+                  <div className="p-6 md:p-8">
+                    
+                    {event.mapUrl && (
+                      <div className="mb-6 rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-50 flex justify-center">
+                        <img 
+                          src={event.mapUrl} 
+                          alt={`Map for ${event.title}`} 
+                          className="w-full h-auto max-h-72 object-cover md:object-contain" 
+                        />
+                      </div>
+                    )}
+
+                    <p className="text-xl text-slate-700 leading-relaxed mb-8 border-l-4 border-slate-300 pl-4">
+                      {event.description}
+                    </p>
+
+                    {!hasAnsweredCurrent ? (
+                      <div className="space-y-4">
+                        <h3 className="text-md font-bold text-slate-500 uppercase tracking-wide mb-2">As a U.S. Leader, what do you choose?</h3>
+                        {event.options.map((opt, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleOptionSelect(opt)}
+                            className="w-full text-left p-4 rounded-lg border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition shadow-sm font-medium text-lg text-slate-800"
+                          >
+                            {opt.text}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="animate-fade-in-up space-y-6">
+                        <div className={`p-4 rounded-lg border-2 flex items-center shadow-sm ${isMatch ? 'bg-green-100 border-green-500 text-green-900' : 'bg-red-50 border-red-400 text-red-900'}`}>
+                          <i className={`fas ${isMatch ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-500'} text-2xl mr-3`}></i>
+                          <div>
+                            <h4 className="font-black text-lg">{isMatch ? "Historical Match!" : "Not Quite History..."}</h4>
+                            <p className="text-md opacity-90">{currentFeedback}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-yellow-100 p-6 rounded-xl border-4 border-yellow-400 shadow-lg relative overflow-hidden">
+                          <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 px-3 py-1 font-black text-sm rounded-bl-lg">
+                            {event.spectrumTag}
+                          </div>
+                          
+                          <h4 className="font-black text-yellow-900 mb-3 flex items-center text-2xl uppercase tracking-wide border-b-2 border-yellow-300 pb-2">
+                            <i className="fas fa-pen-nib text-yellow-700 animate-pulse mr-3"></i> Stop & Write
+                          </h4>
+                          
+                          <p className="font-bold text-slate-700 mb-2">Grab your paper worksheet and record this historical reality for {event.date}:</p>
+                          
+                          <div className="bg-white p-4 rounded border border-yellow-300 text-xl font-serif text-slate-800 leading-relaxed shadow-inner">
+                            {event.historicalReality}
+                          </div>
+                        </div>
+
+                        <div className="text-right pt-4">
+                          <button 
+                            onClick={handleNextEvent}
+                            disabled={!canProceed}
+                            className={`font-bold py-4 px-8 rounded-lg text-xl shadow-md transition ${
+                              canProceed 
+                              ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transform hover:scale-105' 
+                              : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-70'
+                            }`}
+                          >
+                            {canProceed ? "I have written this down. Next Event" : "Please read and write... (Wait 3s)"} <i className={`fas fa-chevron-right ml-1 ${!canProceed && 'hidden'}`}></i>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </main>
+            </div>
+          );
+
+          const ResultsScreen = () => (
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 py-12">
+              <div className="max-w-3xl w-full bg-white rounded-xl shadow-2xl overflow-hidden border-4 border-slate-800">
+                <div className="bg-slate-800 text-white p-10 text-center">
+                  <i className="fas fa-flag text-yellow-400 text-5xl mb-4"></i>
+                  <h1 className="text-5xl font-black mb-2 uppercase tracking-widest">End of the Line</h1>
+                  <p className="text-2xl text-slate-300 font-serif italic">December 1941: The United States is at War.</p>
+                </div>
+
+                <div className="p-10 space-y-8">
+                  <div className="text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2 flex justify-center items-center">
+                      <i className="fas fa-award text-blue-600 mr-3"></i> Historian Score: {scores.matches} / 14
+                    </h2>
+                    <p className="text-lg text-slate-600">You accurately guessed the historical decisions {scores.matches} times.</p>
+                  </div>
+
+                  <div className="bg-amber-50 border-l-8 border-amber-500 p-6 rounded-r-lg shadow-md">
+                    <h3 className="text-2xl font-bold text-amber-900 mb-3">Final Assignment:</h3>
+                    <p className="text-lg text-slate-800 leading-relaxed mb-4">
+                      Now that you have seen the U.S. move from the idealistic 1920s, through the strict isolationism of the 1930s, and finally into the gradual intervention of 1941, it is time to answer the big question.
+                    </p>
+                    <div className="bg-white p-4 rounded border-2 border-dashed border-amber-300 text-center">
+                      <p className="font-black text-xl text-slate-800 uppercase text-red-600">
+                        Flip your paper worksheet over.
+                      </p>
+                      <p className="text-lg font-bold mt-2">
+                        Complete the final reflection questions using the notes you just took.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center pt-6 border-t-2 border-slate-100">
+                    <p className="text-slate-500 font-medium">You may close this device when you are finished writing.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="font-sans antialiased text-slate-900">
+              {gameState === 'start' && <StartScreen />}
+              {gameState === 'intro' && <IntroScreen />}
+              {gameState === 'game' && <GameScreen />}
+              {gameState === 'results' && <ResultsScreen />}
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
   );
 }
