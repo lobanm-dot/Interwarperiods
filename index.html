@@ -26,6 +26,37 @@
         .animate-fade-in-up {
             animation: fadeInUp 0.5s ease-out forwards;
         }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-2px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes flashOverlay {
+            0% { opacity: 1; background-color: white; }
+            100% { opacity: 0; background-color: transparent; }
+        }
+        .animate-flash-overlay {
+            animation: flashOverlay 0.8s ease-out forwards;
+        }
+        @keyframes inputError {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-input-error {
+            animation: inputError 0.2s ease-in-out 2;
+        }
     </style>
 </head>
 <body class="bg-stone-200">
@@ -45,7 +76,7 @@
           {
             id: 1, phase: "Phase 1: Idealistic Diplomacy", date: "1921",
             title: "Washington Naval Conference",
-            description: "Following WWI, nations are worried about an expensive naval arms race. Major powers have gathered in Washington to discuss limiting the size of their navies.",
+            description: "The trauma of WWI is still fresh, and nations are terrified of stumbling into another catastrophic conflict. However, a massively expensive naval arms race is already brewing between the U.S., Britain, and Japan. Major powers have gathered in Washington hoping to stop this race before it sparks a new war.",
             options: [
               { text: "Propose massive, equal cuts to all major navies, including our own.", isHistorical: true, isolationShift: 0, tensionShift: -10, feedback: "You proposed the Five-Power Treaty. It's popular at home and eases global tensions, though it weakens your fleet." },
               { text: "Refuse to limit the U.S. Navy, but ask others to cut theirs.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "Other nations reject this hypocrisy. An arms race continues." },
@@ -57,7 +88,7 @@
           {
             id: 2, phase: "Phase 1: Idealistic Diplomacy", date: "1928",
             title: "The Kellogg-Briand Pact",
-            description: "France proposes a treaty to effectively 'outlaw war' as a tool of national policy. Over 60 nations are ready to sign. Should the U.S. join?",
+            description: "In a bold, idealistic move, France proposes a groundbreaking global treaty to effectively 'outlaw war' as a tool of national policy. The hope is that if every nation simply promises never to fight again, global peace will be guaranteed. Over 60 nations are eager to sign. Should the U.S. join this ambitious pledge?",
             options: [
               { text: "Sign the treaty. A promise of peace is exactly what the world needs.", isHistorical: true, isolationShift: 5, tensionShift: -10, feedback: "The public loves this idealistic pledge for peace, though it lacks any real enforcement mechanism." },
               { text: "Refuse to sign. Treaties without military backing are useless.", isHistorical: false, isolationShift: 10, tensionShift: 5, feedback: "You are heavily criticized for failing to support global peace efforts." }
@@ -68,7 +99,7 @@
           {
             id: 3, phase: "Phase 2: Isolationism", date: "1929-1930",
             title: "The Great Depression Takes Hold",
-            description: "The stock market has crashed and millions of Americans are losing their jobs. Global trade is collapsing. Where should the government focus its attention?",
+            description: "The U.S. economy has suddenly and violently collapsed. The stock market is in ruins, banks are failing, and millions of desperate Americans are losing their homes and jobs. As the crisis spreads globally, international trade grinds to a halt. In this atmosphere of panic and poverty, where should the government focus its attention?",
             options: [
               { text: "Focus entirely inward on the domestic economy. Ignore overseas issues.", isHistorical: true, isolationShift: 15, tensionShift: 5, feedback: "Americans appreciate the focus on their suffering, but the lack of U.S. global leadership allows overseas crises to grow." },
               { text: "Forgive international debts to stimulate the global economy.", isHistorical: false, isolationShift: -10, tensionShift: -5, feedback: "The American public is furious! They demand domestic relief, not foreign charity." }
@@ -79,7 +110,7 @@
           {
             id: 4, phase: "Phase 2: Isolationism", date: "1931",
             title: "Japan Invades Manchuria",
-            description: "Japan has aggressively invaded Manchuria (China), violating international peace treaties. The world watches to see if the U.S. will intervene.",
+            description: "Seeking valuable resources to fuel its growing empire, the Japanese military has aggressively invaded the resource-rich region of Manchuria in China. This is a blatant violation of international peace treaties, including the Kellogg-Briand Pact. The League of Nations is paralyzed, and the world nervously watches to see if the U.S. will step up to stop this unprovoked aggression.",
             mapUrl: "map1.png",
             options: [
               { text: "Send the U.S. Navy to force Japan out of China.", isHistorical: false, isolationShift: -25, tensionShift: 15, feedback: "The public heavily protests this move. They do not want American boys dying in an Asian war." },
@@ -92,7 +123,7 @@
           {
             id: 5, phase: "Phase 2: Isolationism", date: "1933-1934",
             title: "Hitler's Rise & The Nye Committee",
-            description: "Hitler becomes Chancellor of Germany. Meanwhile, the U.S. Senate 'Nye Committee' tells the public that greedy bankers and weapons makers tricked the U.S. into entering WWI.",
+            description: "Adolf Hitler has taken absolute power in Germany, crushing democracy and promising to rebuild a German empire. Meanwhile, back at home, the explosive U.S. Senate 'Nye Committee' releases a shocking report. They claim that greedy Wall Street bankers and weapons manufacturers—so-called 'merchants of death'—tricked America into entering WWI just to make a profit. Americans are furious.",
             options: [
               { text: "Embrace the Nye findings. Swear never to be tricked into war again.", isHistorical: true, isolationShift: 15, tensionShift: 5, feedback: "Isolationist sentiment skyrockets. Americans are convinced WWI was a mistake and vow absolute neutrality." },
               { text: "Denounce the committee. Argue dictators are the real threat.", isHistorical: false, isolationShift: -15, tensionShift: 10, feedback: "You are labeled a fearmonger. The public refuses to believe Europe's problems are America's." }
@@ -103,7 +134,7 @@
           {
             id: 6, phase: "Phase 2: Isolationism", date: "1935",
             title: "Italy Invades Ethiopia",
-            description: "Mussolini’s fascist Italy brutally invades Ethiopia. Congress is debating a new Neutrality Act to keep America out of foreign wars.",
+            description: "Seeking imperial glory, Benito Mussolini’s fascist Italian army brutally invades the independent African nation of Ethiopia, using modern tanks and poison gas against Ethiopian defenders. The League of Nations condemns the attack but does nothing to stop it. Terrified of being dragged into another foreign slaughter, the U.S. Congress scrambles to draft a new 'Neutrality Act.'",
             mapUrl: "map2.png",
             dictatorUrl: "dictator1.png",
             options: [
@@ -116,7 +147,8 @@
           {
             id: 7, phase: "Phase 2: Isolationism", date: "1937",
             title: "Neutrality Act of 1937",
-            description: "Hitler remilitarizes the Rhineland, breaking the WWI peace treaty. War seems closer. How do you adjust your neutrality laws?",
+            description: "In a brazen violation of the Treaty of Versailles, Hitler marches German troops back into the Rhineland—a demilitarized buffer zone bordering France. Britain and France are stunned but take no military action, fearing another war. With fascist dictators growing bolder in Europe, a new global war feels dangerously close. How do you adjust America's neutrality laws to ensure we aren't pulled into the crossfire?",
+            mapUrl: "map3.png",
             options: [
               { text: "Ban Americans from traveling on ships of warring nations to avoid a Lusitania repeat.", isHistorical: true, isolationShift: 10, tensionShift: 10, feedback: "A safe choice that highly pleases the isolationist public." },
               { text: "Demand a massive increase in the U.S. military budget.", isHistorical: false, isolationShift: -15, tensionShift: 15, feedback: "Public backlash is severe. Americans accuse you of trying to start an arms race." }
@@ -127,18 +159,27 @@
           {
             id: 8, phase: "Phase 2: Isolationism", date: "1938",
             title: "Appeasement and the Sudetenland",
-            description: "Hitler demands the Sudetenland region of Czechoslovakia. Britain and France choose 'Appeasement,' giving Hitler what he wants for a promise of peace.",
+            description: "Hitler threatens a massive European war unless he is given the Sudetenland, a heavily fortified region of democratic Czechoslovakia. Desperate to avoid bloodshed, the leaders of Britain and France meet Hitler in Munich. They choose 'Appeasement'—forcing Czechoslovakia to surrender its territory to Germany in exchange for Hitler's personal promise that this is his 'last territorial demand.'",
+            mapUrl: "map4.png",
+            dictatorUrl: "dictator2.png",
+            vocabChallenge: {
+                title: "DIPLOMATIC ALERT: Vocabulary Check",
+                text: "Britain and France are giving in to an aggressor's demands in order to avoid a larger war. What is the vocabulary term for this policy?",
+                answer: "appeasement",
+                hint: "Starts with 'A' and ends in 'MENT'"
+            },
             options: [
               { text: "Publicly support Appeasement. Peace must be maintained at all costs.", isHistorical: true, isolationShift: 5, tensionShift: 15, feedback: "Americans are relieved war was avoided, but Hitler is emboldened." },
               { text: "Offer American military protection to Czechoslovakia.", isHistorical: false, isolationShift: -25, tensionShift: 25, feedback: "An absolute political disaster at home. Congress refuses to back your empty threats." }
             ],
             historicalReality: "The U.S. passively supported the Munich Agreement (Appeasement). Isolationism remained dominant, and Americans were relieved that Britain and France surrendered land to avoid a war.",
+            stopAndThink: "Hitler will break the Munich Agreement just months later by conquering the rest of Czechoslovakia. This complete betrayal of trust teaches the world a harsh lesson: you cannot appease an aggressor. Think about it: How will this broken trust shape how the U.S. and its allies deal with future dictators for decades to come?",
             spectrumTag: "Strong Isolationism"
           },
           {
             id: 9, phase: "Phase 3: Gradual Intervention", date: "1937",
             title: "The Quarantine Speech",
-            description: "FDR gives the 'Quarantine Speech,' suggesting peaceful nations should financially isolate aggressor nations (like an 'epidemic').",
+            description: "Watching the terrifying spread of fascism in Europe and Japanese brutality in China, President Roosevelt decides to test the waters of American public opinion. He delivers the 'Quarantine Speech,' suggesting that law-abiding nations should economically isolate and 'quarantine' aggressive dictatorships, much like a community would isolate patients with a highly contagious epidemic.",
             options: [
               { text: "Push hard. We must organize a global boycott of dictators.", isHistorical: false, isolationShift: -15, tensionShift: 15, feedback: "The public reacts with intense hostility! They fear economic blockades lead straight to shooting wars." },
               { text: "Back down immediately after massive public backlash.", isHistorical: true, isolationShift: 10, tensionShift: 10, feedback: "You maintain domestic support, but signal to the world that the U.S. is still paralyzed by isolationism." }
@@ -147,9 +188,30 @@
             spectrumTag: "Forced Isolationism"
           },
           {
-            id: 10, phase: "Phase 3: Gradual Intervention", date: "Sept 1939",
+            id: 10, phase: "Phase 3: Gradual Intervention", date: "August 1939",
+            title: "SHOCKING NEWS: Nazi-Soviet Pact",
+            description: "The world is stunned. Sworn enemies Adolf Hitler and Joseph Stalin have just signed a Non-Aggression Pact, secretly agreeing to divide Eastern Europe between them. Hitler no longer fears a two-front war. An invasion of Poland is now imminent.",
+            mapUrl: "map10.png",
+            isShocking: true,
+            options: [
+              { text: "Prepare for the worst. The balance of power in Europe has just collapsed.", isHistorical: true, isolationShift: -5, tensionShift: 25, feedback: "You recognize the severe danger. War in Europe is now unavoidable." },
+              { text: "It's a European problem. Double down on strict neutrality.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "You ignore the massive shift in power, but global tension continues to skyrocket." }
+            ],
+            historicalReality: "The Molotov-Ribbentrop Pact shocked the world and practically guaranteed WWII. By securing his eastern border, Hitler was free to attack Poland without Soviet interference.",
+            spectrumTag: "Pre-War Panic"
+          },
+          {
+            id: 11, phase: "Phase 3: Gradual Intervention", date: "Sept 1939",
             title: "Poland Invaded (WWII Begins)",
-            description: "Hitler invades Poland. WWII officially begins. Britain and France are fighting the Nazis and desperately need weapons.",
+            description: "The appeasement strategy has failed completely. Hitler's forces launch a devastating, lightning-fast 'blitzkrieg' invasion of Poland. Britain and France immediately declare war on Germany. World War II has officially begun. The Allied forces are now locked in a desperate fight against the highly advanced Nazi war machine, and they urgently need American weapons to survive.",
+            mapUrl: "map5.png",
+            vocabChallenge: {
+                title: "BATTLEFIELD REPORT: Tactic Identified",
+                text: "Hitler's forces have overrun Poland using a terrifying new tactic combining rapid tanks and air support to create a 'lightning war'. What is the German word for this?",
+                answer: "blitzkrieg",
+                hint: "Starts with 'B' and ends with 'G'",
+                isShocking: true
+            },
             options: [
               { text: "Maintain absolute neutrality. No weapon sales to anyone.", isHistorical: false, isolationShift: 15, tensionShift: 20, feedback: "You stay neutral, but Britain and France face the Nazi war machine heavily outgunned." },
               { text: "Pass a new Neutrality Act allowing 'Cash and Carry' for weapons.", isHistorical: true, isolationShift: -15, tensionShift: 15, feedback: "A brilliant political move. You help the Allies without risking American ships or money." }
@@ -158,9 +220,12 @@
             spectrumTag: "Cautious Intervention"
           },
           {
-            id: 11, phase: "Phase 3: Gradual Intervention", date: "Summer 1940",
+            id: 12, phase: "Phase 3: Gradual Intervention", date: "Summer 1940",
             title: "Fall of France & Destroyers for Bases",
-            description: "France has fallen to the Nazis. Britain stands alone. The isolationist 'America First Committee' screams for neutrality, but Winston Churchill begs for naval ships.",
+            description: "In a shocking turn of events, the powerful French army collapses in just six weeks. Paris is under Nazi control, and Great Britain now stands entirely alone against Hitler's forces. While the powerful 'America First Committee' holds massive rallies demanding the U.S. stay out of it, British Prime Minister Winston Churchill sends desperate pleas to FDR for old American naval ships to protect the British coast from invasion.",
+            mapUrl: "map6.png",
+            map2Url: "map7.png",
+            dictatorUrl: "dictator3.png",
             options: [
               { text: "Listen to the America First Committee. Give Britain nothing.", isHistorical: false, isolationShift: 15, tensionShift: 25, feedback: "Britain edges closer to collapse, threatening total Nazi dominance of Europe." },
               { text: "Trade 50 old U.S. destroyers to Britain in exchange for military bases.", isHistorical: true, isolationShift: -15, tensionShift: 15, feedback: "A clever workaround. You bypass strict neutrality laws by calling it a 'trade' that benefits U.S. defense." }
@@ -169,9 +234,10 @@
             spectrumTag: "Active Intervention"
           },
           {
-            id: 12, phase: "Phase 3: Gradual Intervention", date: "Sept 1940",
+            id: 13, phase: "Phase 3: Gradual Intervention", date: "Sept 1940",
             title: "The Selective Service Act",
-            description: "The world is on fire, but the U.S. military is tiny and unequipped. Do you institute a military draft even though the U.S. is not officially at war?",
+            description: "Most of Europe is conquered, and London is being ruthlessly bombed from the air. Despite the clear and present danger to global democracy, the United States military is shockingly small—ranking 18th in the world, just behind Holland. To prepare for the worst, military advisors suggest a highly controversial move: instituting a military draft. However, the U.S. is still technically at peace.",
+            mapUrl: "service.png",
             options: [
               { text: "Yes, institute the first peacetime draft in U.S. history.", isHistorical: true, isolationShift: -20, tensionShift: 10, feedback: "Mothers protest and isolationists rage, but your military finally begins to modernize and grow." },
               { text: "No, rely strictly on voluntary enlistment to keep the peace.", isHistorical: false, isolationShift: 10, tensionShift: 15, feedback: "The public is happy, but your generals warn that the nation is entirely unprepared if attacked." }
@@ -180,20 +246,22 @@
             spectrumTag: "War Preparedness"
           },
           {
-            id: 13, phase: "Phase 3: Gradual Intervention", date: "Early 1941",
+            id: 14, phase: "Phase 3: Gradual Intervention", date: "Early 1941",
             title: "Lend-Lease Act",
-            description: "Britain is bankrupt and can no longer pay 'Cash' for weapons. FDR proposes becoming the 'Arsenal of Democracy' and simply lending weapons to allies.",
+            description: "Under relentless nightly bombing from the German Luftwaffe, Britain is completely bankrupt. They can no longer afford to pay cash for the American weapons keeping them alive. Furthermore, the war expands wildly as Hitler breaks his pact with Stalin and invades the Soviet Union. If Britain and the Soviets fall, America will face a fascist-dominated globe alone. FDR proposes a radical solution: the U.S. should become the 'Arsenal of Democracy.' We will drop the cash requirement and simply 'lend or lease' billions of dollars worth of tanks, planes, and bullets to any nation fighting the Axis powers.",
+            mapUrl: "map8.png",
             options: [
-              { text: "Pass Lend-Lease. Send massive amounts of free weapons to Britain.", isHistorical: true, isolationShift: -25, tensionShift: 20, feedback: "America officially abandons neutrality in practice, providing a massive lifeline to the Allies." },
-              { text: "Refuse. If they can't pay, they get no weapons.", isHistorical: false, isolationShift: 15, tensionShift: 25, feedback: "Britain's war effort grinds to a halt. A Nazi victory in Europe seems imminent." }
+              { text: "Pass Lend-Lease. Send massive amounts of free weapons to Britain and the USSR.", isHistorical: true, isolationShift: -25, tensionShift: 20, feedback: "America officially abandons neutrality in practice, providing a massive lifeline to the Allies." },
+              { text: "Refuse. If they can't pay, they get no weapons.", isHistorical: false, isolationShift: 15, tensionShift: 25, feedback: "The Allied war effort grinds to a halt. A Nazi victory in Europe seems imminent." }
             ],
-            historicalReality: "Congress passed Lend-Lease. The U.S. fully abandoned the pretense of neutrality, loaning billions in weapons to Britain (and the USSR) to defeat fascism, becoming the 'Arsenal of Democracy.'",
+            historicalReality: "Congress passed Lend-Lease. The U.S. fully abandoned the pretense of neutrality, loaning billions in weapons to Britain (and eventually the USSR) to defeat fascism, becoming the 'Arsenal of Democracy.'",
             spectrumTag: "Heavy Intervention"
           },
           {
-            id: 14, phase: "Phase 3: Gradual Intervention", date: "Mid-Late 1941",
+            id: 15, phase: "Phase 3: Gradual Intervention", date: "Mid-Late 1941",
             title: "The Atlantic Charter",
-            description: "Hitler invades the Soviet Union. FDR and Churchill meet secretly to draft war aims, while U.S. ships are ordered to 'shoot on sight' at German U-boats.",
+            description: "The conflict has gone truly global. Sensing the climax of the crisis, FDR and Churchill hold a highly secretive meeting on a battleship in the Atlantic. They draft the 'Atlantic Charter,' outlining their shared vision for a post-war democratic world. Meanwhile, German U-boats are relentlessly sinking American supply ships. FDR must decide how the U.S. Navy should respond in the perilous waters of the Atlantic.",
+            mapUrl: "map9.png",
             options: [
               { text: "Embrace the alliance. Order the Navy to protect supply shipments.", isHistorical: true, isolationShift: -20, tensionShift: 20, feedback: "An undeclared naval war begins in the Atlantic. The U.S. is at war in everything but name." },
               { text: "Pull back U.S. ships. Avoid provoking the German Navy.", isHistorical: false, isolationShift: 15, tensionShift: 10, feedback: "You avoid naval clashes, but Lend-Lease supplies are sunk, starving the British." }
@@ -212,7 +280,35 @@
           const [isMatch, setIsMatch] = useState(false);
           const [canProceed, setCanProceed] = useState(false);
 
+          const [currentChallenge, setCurrentChallenge] = useState(null);
+          const [challengeInput, setChallengeInput] = useState("");
+          const [challengeError, setChallengeError] = useState(false);
+          const [flashEffect, setFlashEffect] = useState(false);
+
           const event = EVENTS[currentEventIndex];
+
+          useEffect(() => {
+            if (gameState === 'game') {
+                const currentEvt = EVENTS[currentEventIndex];
+                if (currentEvt.vocabChallenge) {
+                    setCurrentChallenge(currentEvt.vocabChallenge);
+                    setChallengeInput("");
+                    setChallengeError(false);
+                    if (currentEvt.vocabChallenge.isShocking) {
+                        setFlashEffect(true);
+                        setTimeout(() => setFlashEffect(false), 800);
+                    }
+                }
+            }
+          }, [currentEventIndex, gameState]);
+
+          const checkChallenge = () => {
+              if (challengeInput.toLowerCase().trim() === currentChallenge.answer.toLowerCase()) {
+                  setCurrentChallenge(null);
+              } else {
+                  setChallengeError(true);
+              }
+          };
 
           const clamp = (val) => Math.min(Math.max(val, 0), 100);
 
@@ -357,9 +453,51 @@
 
           const GameScreen = () => (
             <div className="min-h-screen flex flex-col">
+              {flashEffect && (
+                <div className="fixed inset-0 bg-white z-[100] pointer-events-none animate-flash-overlay"></div>
+              )}
+              
+              {currentChallenge && (
+                <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in-up">
+                  <div className={`bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 border-4 ${currentChallenge.isShocking ? 'border-red-600 animate-shake' : 'border-blue-600'}`}>
+                      <h3 className={`text-3xl font-black uppercase mb-4 ${currentChallenge.isShocking ? 'text-red-700' : 'text-blue-800'}`}>
+                        <i className={`fas ${currentChallenge.isShocking ? 'fa-bolt' : 'fa-spell-check'} mr-3`}></i>
+                        {currentChallenge.title}
+                      </h3>
+                      <p className="text-xl text-slate-700 mb-6 font-medium leading-relaxed">
+                        {currentChallenge.text}
+                      </p>
+                      <div className="mb-6">
+                        <input 
+                          type="text" 
+                          value={challengeInput}
+                          onChange={(e) => {
+                            setChallengeInput(e.target.value);
+                            setChallengeError(false);
+                          }}
+                          onKeyDown={(e) => e.key === 'Enter' && checkChallenge()}
+                          placeholder="Type the word..."
+                          className={`w-full text-2xl p-4 border-4 rounded-xl font-bold text-center uppercase tracking-widest outline-none transition ${challengeError ? 'border-red-500 bg-red-50 animate-input-error' : 'border-slate-300 focus:border-blue-500'}`}
+                        />
+                        {challengeError && (
+                          <p className="text-red-600 font-bold text-center mt-3 bg-red-100 p-2 rounded">
+                            Incorrect. Try again! <br/><span className="text-sm">(Hint: {currentChallenge.hint})</span>
+                          </p>
+                        )}
+                      </div>
+                      <button 
+                        onClick={checkChallenge}
+                        className="w-full bg-slate-800 hover:bg-slate-900 text-white font-black text-xl py-4 rounded-xl shadow-lg transition transform hover:scale-105"
+                      >
+                        Submit Answer
+                      </button>
+                  </div>
+                </div>
+              )}
+
               <TopNav />
               
-              <main className="flex-1 max-w-4xl mx-auto p-4 w-full mt-6 mb-12">
+              <main key={currentEventIndex} className={`flex-1 max-w-4xl mx-auto p-4 w-full mt-6 mb-12 ${event.isShocking ? 'animate-shake' : ''}`}>
                 <div className={`text-center py-2 px-4 rounded-full font-bold mb-6 border-2 inline-block mx-auto ${getPhaseColor(event.phase)} shadow-sm`}>
                   {event.phase}
                 </div>
@@ -372,13 +510,22 @@
                   
                   <div className="p-6 md:p-8">
                     
-                    {(event.mapUrl || event.dictatorUrl) && (
-                      <div className={`mb-6 flex flex-col ${event.mapUrl && event.dictatorUrl ? 'md:flex-row gap-4' : 'justify-center'}`}>
+                    {(event.mapUrl || event.dictatorUrl || event.map2Url) && (
+                      <div className={`mb-6 flex flex-col ${(event.mapUrl && event.dictatorUrl) || event.map2Url ? 'md:flex-row gap-4' : 'justify-center'}`}>
                         {event.mapUrl && (
                           <div className="flex-1 rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-50 flex justify-center">
                             <img 
                               src={event.mapUrl} 
-                              alt={`Map for ${event.title}`} 
+                              alt={`Visual for ${event.title}`} 
+                              className="w-full h-auto max-h-72 object-cover md:object-contain" 
+                            />
+                          </div>
+                        )}
+                        {event.map2Url && (
+                          <div className="flex-1 rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-50 flex justify-center">
+                            <img 
+                              src={event.map2Url} 
+                              alt={`Secondary Visual for ${event.title}`} 
                               className="w-full h-auto max-h-72 object-cover md:object-contain" 
                             />
                           </div>
@@ -438,6 +585,17 @@
                           </div>
                         </div>
 
+                        {event.stopAndThink && (
+                          <div className="bg-purple-100 p-6 rounded-xl border-4 border-purple-400 shadow-lg relative overflow-hidden mt-6 animate-fade-in-up">
+                            <h4 className="font-black text-purple-900 mb-3 flex items-center text-2xl uppercase tracking-wide border-b-2 border-purple-300 pb-2">
+                              <i className="fas fa-brain text-purple-700 animate-pulse mr-3"></i> Stop & Think
+                            </h4>
+                            <p className="text-xl font-medium text-slate-800 leading-relaxed">
+                              {event.stopAndThink}
+                            </p>
+                          </div>
+                        )}
+
                         <div className="text-right pt-4">
                           <button 
                             onClick={handleNextEvent}
@@ -471,7 +629,7 @@
                 <div className="p-10 space-y-8">
                   <div className="text-center">
                     <h2 className="text-3xl font-black text-slate-800 mb-2 flex justify-center items-center">
-                      <i className="fas fa-award text-blue-600 mr-3"></i> Historian Score: {scores.matches} / 14
+                      <i className="fas fa-award text-blue-600 mr-3"></i> Historian Score: {scores.matches} / {EVENTS.length}
                     </h2>
                     <p className="text-lg text-slate-600">You accurately guessed the historical decisions {scores.matches} times.</p>
                   </div>
