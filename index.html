@@ -151,6 +151,7 @@
             title: "Neutrality Act of 1937",
             description: "In a brazen violation of the Treaty of Versailles, Hitler marches German troops back into the Rhineland—a demilitarized buffer zone bordering France. Britain and France are stunned but take no military action, fearing another war. With fascist dictators growing bolder in Europe, a new global war feels dangerously close. How do you adjust America's neutrality laws to ensure we aren't pulled into the crossfire?",
             mapUrl: "map3.png",
+            audioUrl: "hitlerspeech.wav",
             options: [
               { text: "Ban Americans from traveling on ships of warring nations to avoid a Lusitania repeat.", isHistorical: true, isolationShift: 10, tensionShift: 10, feedback: "A safe choice that highly pleases the isolationist public." },
               { text: "Demand a massive increase in the U.S. military budget.", isHistorical: false, isolationShift: -15, tensionShift: 15, feedback: "Public backlash is severe. Americans accuse you of trying to start an arms race." }
@@ -545,6 +546,20 @@
                             />
                           </div>
                         )}
+                      </div>
+                    )}
+
+                    {event.audioUrl && (
+                      <div className="mb-6 bg-slate-100 p-4 rounded-lg border-2 border-slate-300 flex items-center shadow-sm">
+                        <i className="fas fa-volume-up text-3xl text-slate-600 mr-4 animate-pulse"></i>
+                        <div className="flex-1">
+                            <p className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2">Historical Audio Broadcast</p>
+                            <audio controls className="w-full h-10 outline-none rounded">
+                                <source src={event.audioUrl} type="audio/wav" />
+                                <source src={event.audioUrl.replace('.wav', '.mp3')} type="audio/mpeg" />
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
                       </div>
                     )}
 
