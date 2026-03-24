@@ -104,6 +104,8 @@
             id: 6, phase: "Phase 2: Isolationism", date: "1935",
             title: "Italy Invades Ethiopia",
             description: "Mussolini’s fascist Italy brutally invades Ethiopia. Congress is debating a new Neutrality Act to keep America out of foreign wars.",
+            mapUrl: "map2.png",
+            dictatorUrl: "dictator1.png",
             options: [
               { text: "Ban all arms sales to ANY nation at war, victim or aggressor.", isHistorical: true, isolationShift: 15, tensionShift: 10, feedback: "You successfully keep the U.S. out of the conflict, but Ethiopia is left defenseless." },
               { text: "Sell weapons only to the victim (Ethiopia).", isHistorical: false, isolationShift: -10, tensionShift: 15, feedback: "Congress blocks you. They fear that picking sides will inevitably drag the U.S. into the war." }
@@ -370,13 +372,26 @@
                   
                   <div className="p-6 md:p-8">
                     
-                    {event.mapUrl && (
-                      <div className="mb-6 rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-50 flex justify-center">
-                        <img 
-                          src={event.mapUrl} 
-                          alt={`Map for ${event.title}`} 
-                          className="w-full h-auto max-h-72 object-cover md:object-contain" 
-                        />
+                    {(event.mapUrl || event.dictatorUrl) && (
+                      <div className={`mb-6 flex flex-col ${event.mapUrl && event.dictatorUrl ? 'md:flex-row gap-4' : 'justify-center'}`}>
+                        {event.mapUrl && (
+                          <div className="flex-1 rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-50 flex justify-center">
+                            <img 
+                              src={event.mapUrl} 
+                              alt={`Map for ${event.title}`} 
+                              className="w-full h-auto max-h-72 object-cover md:object-contain" 
+                            />
+                          </div>
+                        )}
+                        {event.dictatorUrl && (
+                          <div className="flex-1 rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm bg-slate-50 flex justify-center">
+                            <img 
+                              src={event.dictatorUrl} 
+                              alt={`Key Figure for ${event.title}`} 
+                              className="w-full h-auto max-h-72 object-cover md:object-contain" 
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -499,5 +514,3 @@
     </script>
 </body>
 </html>
-  );
-}
